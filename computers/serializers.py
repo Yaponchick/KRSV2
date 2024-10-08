@@ -6,12 +6,12 @@ from computers.models import Computer,VideoCard,Motherboard,Processor,PowerUnit
 class VideoCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = VideoCard
-        fields = ['id','model','price','numberFans','turboFrequency','memory_size']
+        fields = ['id','model','price','numberFans','turboFrequency','memory_size','picture']
 
 class MotherboardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Motherboard
-        fields = ['id','model','price','compatibleKernels','processorPowerConnector','supportedMemory']
+        fields = ['id','model','price','compatibleKernels','processorPowerConnector','supportedMemory','picture']
 
 class ProcessorSerializer(serializers.ModelSerializer):
     class Meta:

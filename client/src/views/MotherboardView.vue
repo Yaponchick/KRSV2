@@ -8,10 +8,29 @@ onBeforeMount(() => {
     axios.defaults.headers.common['X-CSRFToken'] = Cookies.get("csrftoken");
 })
 
-
 const motherboard = ref({});
 const motherboardAdd = ref({});
 const MotherboardAddToEdit = ref({});
+
+const computersPictureRef = ref();
+const computersAddImageUrl = ref();
+const computersEditImageUrl = ref();
+const computersEditPictureRef = ref();
+
+async function computersAddPictureChange() {
+    computersAddImageUrl.value = URL.createObjectURL(computersPictureRef.value.files[0])
+
+}
+
+async function computersEditPicture() {
+    computersEditImageUrl.value = URL.createObjectURL(computersEditPictureRef.value.files[0])
+}
+
+function openImageModal(imageUrl) {
+    selectedImageUrl.value = imageUrl;
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    imageModal.show();
+}
 
 async function fetchMotherboard() {
     const r = await axios.get("/api/Motherboard/");
@@ -19,8 +38,20 @@ async function fetchMotherboard() {
 }
 
 async function onMotherboardAdd() {
-    await axios.post("/api/Motherboard/", {
-        ...motherboardAdd.value,
+    const formData = new FormData();
+
+    formData.append('picture', computersPictureRef.value.files[0]);
+
+    formData.set('model', motherboardAdd.value.model)
+    formData.set('price', motherboardAdd.value.price)
+    formData.set('compatibleKernels', motherboardAdd.value.compatibleKernels)
+    formData.set('processorPowerConnector', motherboardAdd.value.processorPowerConnector)
+    formData.set('supportedMemory', motherboardAdd.value.supportedMemory)
+
+    await axios.post("/api/Motherboard/", formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
     });
     await fetchMotherboard();
 }
@@ -37,11 +68,27 @@ async function onRemoveClick(motherboard) {
 
 async function onMotherboardEditClick(motherboard) {
     MotherboardAddToEdit.value = { ...motherboard };
+    computersEditImageUrl.value = motherboard.picture;
+
+    computersEditPictureRef.value.value = null;
 }
 
+
 async function onUpdateMotherboard() {
-    await axios.put(`/api/Motherboard/${MotherboardAddToEdit.value.id}/`, {
-        ...MotherboardAddToEdit.value
+    const formData = new FormData();
+    if (computersEditPictureRef.value.files.length > 0) {
+        formData.append('picture', computersEditPictureRef.value.files[0]);
+    }
+    formData.set('model', MotherboardAddToEdit.value.model);
+    formData.set('price', MotherboardAddToEdit.value.price);
+    formData.set('compatibleKernels', MotherboardAddToEdit.value.compatibleKernels);
+    formData.set('processorPowerConnector', MotherboardAddToEdit.value.processorPowerConnector);
+    formData.set('supportedMemory', MotherboardAddToEdit.value.supportedMemory);
+
+    await axios.put(`/api/Motherboard/${MotherboardAddToEdit.value.id}/`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
     });
     await fetchMotherboard();
 }
@@ -53,6 +100,20 @@ async function onUpdateMotherboard() {
 
 <template>
     <div class="container-fluid">
+        <!--Modal picture-->
+        <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="imageModalLabel">Изображение</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <img :src="selectedImageUrl" class="img-fluid" alt="Изображение">
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!--Modal-->
         <form>
@@ -99,6 +160,15 @@ async function onUpdateMotherboard() {
                                         <label for="floatingInput">Память</label>
                                     </div>
                                 </div>
+                                <div class="col-auto">
+                                    <input class="form-control" type="file" ref="computersEditPictureRef"
+                                        @change="computersEditPicture" required>
+
+                                </div>
+                                <div class="col-auto">
+                                    <img :src="computersEditImageUrl || MotherboardAddToEdit.picture"
+                                        style="max-height: 60px;" alt="">
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -110,11 +180,6 @@ async function onUpdateMotherboard() {
                 </div>
             </div>
         </form>
-
-
-
-
-
 
 
 
@@ -163,6 +228,13 @@ async function onUpdateMotherboard() {
                     <div class="col-auto">
                         <button class="btn btn-primary mt-3">Добавить</button>
                     </div>
+                    <div class="col-auto">
+                        <input class="form-control" type="file" ref="computersPictureRef"
+                            @change="computersAddPictureChange" required>
+                    </div>
+                    <div class="col-auto">
+                        <img :src="computersAddImageUrl" style="max-height: 60px;" alt="">
+                    </div>
                 </div>
             </form>
             <div>
@@ -173,6 +245,10 @@ async function onUpdateMotherboard() {
                     <div>{{ item.processorPowerConnector }}</div>
                     <div>{{ item.supportedMemory }}</div>
 
+                    <div v-show="item.picture">
+                        <img :src="item.picture" style="max-height: 60px;" @click="openImageModal(item.picture)" alt=""
+                            data-bs-toggle="modal" data-bs-target="#imageModal">
+                    </div>
 
                     <button class="btn btn-success" @click="onMotherboardEditClick(item)" data-bs-toggle="modal"
                         data-bs-target="#editMotherboardModal"> <i class="bi bi-pencil"> </i></button>
@@ -193,7 +269,7 @@ async function onUpdateMotherboard() {
     box-shadow: 0 0 4px silver;
     border-radius: 8px;
     display: grid;
-    grid-template-columns: 0.5fr 0.5fr 0.5fr 1fr 1fr 0.14fr auto;
+    grid-template-columns: 0.5fr 0.5fr 0.5fr 1fr 1fr 0.14fr 0.2fr auto;
     gap: 8px;
     text-align: center;
     align-items: center;

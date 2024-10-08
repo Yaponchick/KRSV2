@@ -8,10 +8,32 @@ onBeforeMount(() => {
     axios.defaults.headers.common['X-CSRFToken'] = Cookies.get("csrftoken");
 })
 
+const selectedImageUrl = ref('');
 
 const videoCard = ref({});
 const videoCardAdd = ref({});
 const VideoCardToEdit = ref({});
+
+const computersPictureRef = ref();
+const computersAddImageUrl = ref();
+const computersEditImageUrl = ref();
+const computersEditPictureRef = ref();
+
+
+async function computersAddPictureChange() {
+    computersAddImageUrl.value = URL.createObjectURL(computersPictureRef.value.files[0])
+
+}
+
+async function computersEditPicture() {
+    computersEditImageUrl.value = URL.createObjectURL(computersEditPictureRef.value.files[0])
+}
+
+function openImageModal(imageUrl) {
+    selectedImageUrl.value = imageUrl;
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    imageModal.show();
+}
 
 async function fetchVideocards() {
     const r = await axios.get("/api/VideoCard/");
@@ -19,8 +41,20 @@ async function fetchVideocards() {
 }
 
 async function onVideoCardAdd() {
-    await axios.post("/api/VideoCard/", {
-        ...videoCardAdd.value,
+    const formData = new FormData();
+
+    formData.append('picture', computersPictureRef.value.files[0]);
+
+    formData.set('model', videoCardAdd.value.model)
+    formData.set('price', videoCardAdd.value.price)
+    formData.set('numberFans', videoCardAdd.value.numberFans)
+    formData.set('turboFrequency', videoCardAdd.value.turboFrequency)
+    formData.set('memory_size', videoCardAdd.value.memory_size)
+
+    await axios.post("/api/VideoCard/", formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
     });
     await fetchVideocards();
 }
@@ -37,11 +71,27 @@ async function onRemoveClick(videoCard) {
 
 async function onVideoCardEditClick(videocard) {
     VideoCardToEdit.value = { ...videocard };
+    computersEditImageUrl.value = videocard.picture;
+
+    computersEditPictureRef.value.value = null;
 }
 
+
 async function onUpdateVideoCard() {
-    await axios.put(`/api/VideoCard/${VideoCardToEdit.value.id}/`, {
-        ...VideoCardToEdit.value
+    const formData = new FormData();
+    if (computersEditPictureRef.value.files.length > 0) {
+        formData.append('picture', computersEditPictureRef.value.files[0]);
+    }
+    formData.set('model', VideoCardToEdit.value.model);
+    formData.set('price', VideoCardToEdit.value.price);
+    formData.set('numberFans', VideoCardToEdit.value.numberFans);
+    formData.set('turboFrequency', VideoCardToEdit.value.turboFrequency);
+    formData.set('memory_size', VideoCardToEdit.value.memory_size);
+
+    await axios.put(`/api/VideoCard/${VideoCardToEdit.value.id}/`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
     });
     await fetchVideocards();
 }
@@ -53,6 +103,20 @@ async function onUpdateVideoCard() {
 
 <template>
     <div class="container-fluid">
+        <!--Modal picture-->
+        <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="imageModalLabel">Изображение</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <img :src="selectedImageUrl" class="img-fluid" alt="Изображение">
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!--Modal-->
         <form>
@@ -97,6 +161,14 @@ async function onUpdateVideoCard() {
                                         <label for="floatingInput">Размер памяти</label>
                                     </div>
                                 </div>
+                                <div class="col-auto">
+                                    <input class="form-control" type="file" ref="computersEditPictureRef"
+                                        @change="computersEditPicture" required>
+                                </div>
+                                <div class="col-auto">
+                                    <img :src="computersEditImageUrl || VideoCardToEdit.picture"
+                                        style="max-height: 60px;" alt="">
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -108,11 +180,6 @@ async function onUpdateVideoCard() {
                 </div>
             </div>
         </form>
-
-
-
-
-
 
 
 
@@ -159,6 +226,13 @@ async function onUpdateVideoCard() {
                     <div class="col-auto">
                         <button class="btn btn-primary mt-3">Добавить</button>
                     </div>
+                    <div class="col-auto">
+                        <input class="form-control" type="file" ref="computersPictureRef"
+                            @change="computersAddPictureChange" required>
+                    </div>
+                    <div class="col-auto">
+                        <img :src="computersAddImageUrl" style="max-height: 60px;" alt="">
+                    </div>
                 </div>
             </form>
             <div>
@@ -169,6 +243,10 @@ async function onUpdateVideoCard() {
                     <div>{{ item.turboFrequency }}</div>
                     <div>{{ item.memory_size }}</div>
 
+                    <div v-show="item.picture">
+                        <img :src="item.picture" style="max-height: 60px;" @click="openImageModal(item.picture)" alt=""
+                            data-bs-toggle="modal" data-bs-target="#imageModal">
+                    </div>
 
                     <button class="btn btn-success" @click="onVideoCardEditClick(item)" data-bs-toggle="modal"
                         data-bs-target="#editVideoCardModal"> <i class="bi bi-pencil"> </i></button>
@@ -180,7 +258,6 @@ async function onUpdateVideoCard() {
 </template>
 
 
-
 <style lang="scss" scoped>
 .videocard-item {
     padding: 0.5rem;
@@ -189,7 +266,7 @@ async function onUpdateVideoCard() {
     box-shadow: 0 0 4px silver;
     border-radius: 8px;
     display: grid;
-    grid-template-columns: 0.5fr 0.5fr 0.5fr 1fr 1fr 0.14fr auto;
+    grid-template-columns: 0.5fr 0.5fr 0.5fr 1fr 1fr 0.14fr 0.1fr auto;
     gap: 8px;
     text-align: center;
     align-items: center;

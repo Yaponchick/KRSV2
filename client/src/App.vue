@@ -15,7 +15,7 @@
                     aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <div class="collapse navbar-collapse justify-content-between" id="navbarNavDropdown">
                     <ul class="navbar-nav">
                         <li class="nav-item">
                             <router-link class="nav-link" to="/"> Компьютеры </router-link>
@@ -34,6 +34,17 @@
                         </li>
 
                     </ul>
+					<ul class="navbar-nav">
+						<li class="nav-item dropdown">
+							<a class="nav-item dropdown-toggle link" href="#" role="button" data-bs-toggle="dropdown"
+								aria-expanded="false" >
+								Пользователь
+							</a>
+							<ul class="dropdown-menu">
+								<li><a class="dropdown-item" href="/admin">Админка</a></li>
+							</ul>
+						</li>
+					</ul>
                 </div>
             </div>
         </nav>

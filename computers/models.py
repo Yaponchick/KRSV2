@@ -7,6 +7,8 @@ class VideoCard(models.Model):
     turboFrequency = models.TextField("Турбочастота")
     memory_size = models.TextField("Размер памяти")
 
+    picture = models.ImageField("Изображение", null=True, upload_to="computers")
+
     class Meta:
         verbose_name = "Видеокарта"
         verbose_name_plural = "Видеокарты"
@@ -21,6 +23,9 @@ class Motherboard(models.Model):
     processorPowerConnector = models.TextField("Разъем питания процессора")
     supportedMemory = models.TextField("Поддерживаемая память")
     processors = models.ManyToManyField("Processor", verbose_name="Поддерживаемые процессоры")
+
+    picture = models.ImageField("Изображение", null=True, upload_to="computers")
+
 
     class Meta:
         verbose_name = "Материнская плата"
