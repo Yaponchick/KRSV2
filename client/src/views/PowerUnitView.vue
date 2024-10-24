@@ -12,6 +12,7 @@ onBeforeMount(() => {
 const powerUnit = ref({});
 const powerUnitdAdd = ref({});
 const PowerUnitAddToEdit = ref({});
+const powerUnitToDelete = ref(null);
 
 async function fetchPowerUnit() {
     const r = await axios.get("/api/PowerUnit/");
@@ -29,10 +30,15 @@ onBeforeMount(async () => {
     await fetchPowerUnit();
 });
 
-
-async function onRemoveClick(powerUnit) {
-    await axios.delete(`/api/PowerUnit/${powerUnit.id}/`);
-    await fetchPowerUnit();
+function onRemoveClick(powerUnit) {
+    powerUnitToDelete.value = powerUnit;
+}
+async function confirmDelete() {
+    if (powerUnitToDelete.value) {
+        await axios.delete(`/api/PowerUnit/${powerUnitToDelete.value.id}/`);
+        await fetchPowerUnit();
+        powerUnitToDelete.value = null;
+    }
 }
 
 async function onPowerUnitEditClick(powerUnit) {
@@ -53,6 +59,27 @@ async function onUpdatePowerUnit() {
 
 <template>
     <div class="container-fluid">
+
+        <!--Modal delete-->
+        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Вы уверены, что хотите удалить этот блок питания?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-danger" @click="confirmDelete()"
+                            data-bs-dismiss="modal">Удалить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!--Modal-->
         <form>
@@ -173,7 +200,10 @@ async function onUpdatePowerUnit() {
 
                     <button class="btn btn-success" @click="onPowerUnitEditClick(item)" data-bs-toggle="modal"
                         data-bs-target="#editPowerUnitModal"> <i class="bi bi-pencil"> </i></button>
-                    <button class="btn btn-danger" @click="onRemoveClick(item)"> <i class="bi bi-trash"> </i></button>
+                    <button class="btn btn-danger" @click="onRemoveClick(item)" data-bs-toggle="modal"
+                        data-bs-target="#deleteConfirmationModal">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </div>
             </div>
         </div>

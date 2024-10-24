@@ -14,6 +14,7 @@ const videoCard = ref({});
 const motherboard = ref({});
 const processor = ref({});
 const powerUnit = ref({});
+const computersToDelete = ref(null);
 
 const computersToAdd = ref({});
 const computersToEdit = ref({});
@@ -61,9 +62,15 @@ onBeforeMount(async () => {
 });
 
 
-async function onRemoveClick(computer) {
-    await axios.delete(`/api/computers/${computer.id}/`);
-    await fetchComputers();
+function onRemoveClick(computer) {
+    computersToDelete.value = computer;
+}
+async function confirmDelete() {
+    if (computersToDelete.value) {
+        await axios.delete(`/api/computers/${computersToDelete.value.id}/`);
+        await fetchComputers();
+        computersToDelete.value = null;
+    }
 }
 
 async function onUpdateComputer() {
@@ -95,6 +102,27 @@ async function onComputerEditClick(computer) {
 
 <template>
     <div class="container-fluid">
+
+        <!--Modal delete-->
+        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Вы уверены, что хотите удалить этот компьютер?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-danger" @click="confirmDelete()"
+                            data-bs-dismiss="modal">Удалить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!--Modal-->
         <form>
@@ -250,7 +278,10 @@ async function onComputerEditClick(computer) {
                     <div>{{ item.computerPU_FK.model }}</div>
                     <button class="btn btn-success" @click="onComputerEditClick(item)" data-bs-toggle="modal"
                         data-bs-target="#editComputerModal"> <i class="bi bi-pencil"> </i></button>
-                    <button class="btn btn-danger" @click="onRemoveClick(item)"> <i class="bi bi-trash"> </i></button>
+                    <button class="btn btn-danger" @click="onRemoveClick(item)" data-bs-toggle="modal"
+                        data-bs-target="#deleteConfirmationModal">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </div>
             </div>
         </div>

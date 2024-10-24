@@ -12,6 +12,7 @@ onBeforeMount(() => {
 const processor = ref({});
 const ProcessordAdd = ref({});
 const ProcessorAddToEdit = ref({});
+const processorToDelete = ref(null);
 
 async function fetchProcessor() {
     const r = await axios.get("/api/Processor/");
@@ -30,9 +31,15 @@ onBeforeMount(async () => {
 });
 
 
-async function onRemoveClick(processor) {
-    await axios.delete(`/api/Processor/${processor.id}/`);
-    await fetchProcessor();
+function onRemoveClick(processor) {
+    processorToDelete.value = processor;
+}
+async function confirmDelete() {
+    if (processorToDelete.value) {
+        await axios.delete(`/api/Processor/${processorToDelete.value.id}/`);
+        await fetchProcessor();
+        processorToDelete.value = null;
+    }
 }
 
 async function onProcessorEditClick(processor) {
@@ -53,6 +60,27 @@ async function onUpdateProcessor() {
 
 <template>
     <div class="container-fluid">
+
+        <!--Modal delete-->
+        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Вы уверены, что хотите удалить этот процессор?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-danger" @click="confirmDelete()"
+                            data-bs-dismiss="modal">Удалить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!--Modal-->
         <form>
@@ -171,7 +199,10 @@ async function onUpdateProcessor() {
 
                     <button class="btn btn-success" @click="onProcessorEditClick(item)" data-bs-toggle="modal"
                         data-bs-target="#editProcessorModal"> <i class="bi bi-pencil"> </i></button>
-                    <button class="btn btn-danger" @click="onRemoveClick(item)"> <i class="bi bi-trash"> </i></button>
+                    <button class="btn btn-danger" @click="onRemoveClick(item)" data-bs-toggle="modal"
+                        data-bs-target="#deleteConfirmationModal">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </div>
             </div>
         </div>

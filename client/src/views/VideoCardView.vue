@@ -9,6 +9,7 @@ onBeforeMount(() => {
 })
 
 const selectedImageUrl = ref('');
+const videoCardToDelete = ref(null);
 
 const videoCard = ref({});
 const videoCardAdd = ref({});
@@ -62,12 +63,17 @@ async function onVideoCardAdd() {
 onBeforeMount(async () => {
     await fetchVideocards();
 });
-
-
-async function onRemoveClick(videoCard) {
-    await axios.delete(`/api/VideoCard/${videoCard.id}/`);
-    await fetchVideocards();
+function onRemoveClick(videoCard) {
+    videoCardToDelete.value = videoCard;
 }
+async function confirmDelete() {
+    if (videoCardToDelete.value) {
+        await axios.delete(`/api/VideoCard/${videoCardToDelete.value.id}/`);
+        await fetchVideocards();
+        videoCardToDelete.value = null;
+    }
+}
+
 
 async function onVideoCardEditClick(videocard) {
     VideoCardToEdit.value = { ...videocard };
@@ -103,6 +109,28 @@ async function onUpdateVideoCard() {
 
 <template>
     <div class="container-fluid">
+
+        <!--Modal delete-->
+        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Вы уверены, что хотите удалить эту видеокарту?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-danger" @click="confirmDelete()"
+                            data-bs-dismiss="modal">Удалить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!--Modal picture-->
         <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -250,7 +278,10 @@ async function onUpdateVideoCard() {
 
                     <button class="btn btn-success" @click="onVideoCardEditClick(item)" data-bs-toggle="modal"
                         data-bs-target="#editVideoCardModal"> <i class="bi bi-pencil"> </i></button>
-                    <button class="btn btn-danger" @click="onRemoveClick(item)"> <i class="bi bi-trash"> </i></button>
+                    <button class="btn btn-danger" @click="onRemoveClick(item)" data-bs-toggle="modal"
+                        data-bs-target="#deleteConfirmationModal">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </div>
             </div>
         </div>

@@ -7,6 +7,8 @@ import Cookies from 'js-cookie';
 onBeforeMount(() => {
     axios.defaults.headers.common['X-CSRFToken'] = Cookies.get("csrftoken");
 })
+const selectedImageUrl = ref('');
+const motherboardToDelete = ref(null);
 
 const motherboard = ref({});
 const motherboardAdd = ref({});
@@ -31,6 +33,18 @@ function openImageModal(imageUrl) {
     const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
     imageModal.show();
 }
+
+function onRemoveClick(motherboard) {
+    motherboardToDelete.value = motherboard;
+}
+async function confirmDelete() {
+    if (motherboardToDelete.value) {
+        await axios.delete(`/api/Motherboard/${motherboardToDelete.value.id}/`);
+        await fetchMotherboard();
+        motherboardToDelete.value = null;
+    }
+}
+
 
 async function fetchMotherboard() {
     const r = await axios.get("/api/Motherboard/");
@@ -61,10 +75,7 @@ onBeforeMount(async () => {
 });
 
 
-async function onRemoveClick(motherboard) {
-    await axios.delete(`/api/Motherboard/${motherboard.id}/`);
-    await fetchMotherboard();
-}
+
 
 async function onMotherboardEditClick(motherboard) {
     MotherboardAddToEdit.value = { ...motherboard };
@@ -93,13 +104,34 @@ async function onUpdateMotherboard() {
     await fetchMotherboard();
 }
 
-
 </script>
 
 
 
 <template>
     <div class="container-fluid">
+        
+        <!--Modal delete-->
+        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Вы уверены, что хотите удалить эту материнскую плату?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-danger" @click="confirmDelete()"
+                            data-bs-dismiss="modal">Удалить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!--Modal picture-->
         <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -252,7 +284,10 @@ async function onUpdateMotherboard() {
 
                     <button class="btn btn-success" @click="onMotherboardEditClick(item)" data-bs-toggle="modal"
                         data-bs-target="#editMotherboardModal"> <i class="bi bi-pencil"> </i></button>
-                    <button class="btn btn-danger" @click="onRemoveClick(item)"> <i class="bi bi-trash"> </i></button>
+                    <button class="btn btn-danger" @click="onRemoveClick(item)" data-bs-toggle="modal"
+                        data-bs-target="#deleteConfirmationModal">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </div>
             </div>
         </div>
