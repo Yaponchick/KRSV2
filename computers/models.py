@@ -8,6 +8,7 @@ class VideoCard(models.Model):
     memory_size = models.TextField("Размер памяти")
 
     picture = models.ImageField("Изображение", null=True, upload_to="computers")
+    user = models.ForeignKey("auth.User", verbose_name="Пользователь", on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name = "Видеокарта"
@@ -25,6 +26,7 @@ class Motherboard(models.Model):
     processors = models.ManyToManyField("Processor", verbose_name="Поддерживаемые процессоры")
 
     picture = models.ImageField("Изображение", null=True, upload_to="computers")
+    user = models.ForeignKey("auth.User", verbose_name="Пользователь", on_delete=models.CASCADE, null=True)
 
 
     class Meta:
@@ -41,6 +43,7 @@ class Processor(models.Model):
     socket = models.TextField("Сокет")
     chipset = models.TextField("Чипсет")
     frequency = models.TextField("Частота")
+    user = models.ForeignKey("auth.User", verbose_name="Пользователь", on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name = "Процессор"
@@ -56,6 +59,7 @@ class PowerUnit(models.Model):
     networkVoltage = models.TextField("Сетевое напряжение")
     coolingSystem = models.TextField("Система охлаждения")
     power = models.TextField("Мощность")
+    user = models.ForeignKey("auth.User", verbose_name="Пользователь", on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name = "Блок питания"
@@ -68,6 +72,7 @@ class PowerUnit(models.Model):
 class Computer(models.Model):
     model = models.TextField("Имя")
     price = models.TextField("Цена")
+    user = models.ForeignKey("auth.User", verbose_name="Пользователь", on_delete=models.CASCADE, null=True)
 
     computerV_FK = models.ForeignKey(VideoCard, on_delete=models.CASCADE, null=True, verbose_name="Видеокарта")
     computerM_FK = models.ForeignKey(Motherboard, on_delete=models.CASCADE,null=True, verbose_name="Материнская плата")

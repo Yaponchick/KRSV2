@@ -45,7 +45,7 @@ async function onVideoCardAdd() {
     const formData = new FormData();
 
     formData.append('picture', computersPictureRef.value.files[0]);
-
+    
     formData.set('model', videoCardAdd.value.model)
     formData.set('price', videoCardAdd.value.price)
     formData.set('numberFans', videoCardAdd.value.numberFans)

@@ -15,6 +15,14 @@ class VideoCardViewset(
     GenericViewSet):
     queryset = VideoCard.objects.all()
     serializer_class = VideoCardSerializer
+    
+    def get_queryset(self):
+        qs = super().get_queryset()
+        
+        if self.request.user.username != 'admin':
+            qs = qs.filter(user=self.request.user)
+            
+        return qs
 
 class MotherboardViewset(
     mixins.ListModelMixin,
@@ -25,6 +33,15 @@ class MotherboardViewset(
     GenericViewSet):
     queryset = Motherboard.objects.all()
     serializer_class = MotherboardSerializer
+    
+    def get_queryset(self):
+        qs = super().get_queryset()
+        
+        if self.request.user.username != 'admin':
+            qs = qs.filter(user=self.request.user)
+            
+        return qs
+    
 
 class ProcessorViewset(
     mixins.ListModelMixin,
@@ -35,6 +52,14 @@ class ProcessorViewset(
     GenericViewSet):
     queryset = Processor.objects.all()
     serializer_class = ProcessorSerializer
+    
+    def get_queryset(self):
+        qs = super().get_queryset()
+        
+        if self.request.user.username != 'admin':
+            qs = qs.filter(user=self.request.user)
+            
+        return qs
 
 class PowerUnitViewset(
     mixins.ListModelMixin,
@@ -46,6 +71,14 @@ class PowerUnitViewset(
     queryset = PowerUnit.objects.all()
     serializer_class = PowerUnitSerializer
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        
+        if self.request.user.username != 'admin':
+            qs = qs.filter(user=self.request.user)
+            
+        return qs
+    
 class ComputersViewset(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -55,3 +88,11 @@ class ComputersViewset(
     GenericViewSet):
     queryset = Computer.objects.all()
     serializer_class = ComputerSerializer
+    
+    def get_queryset(self):
+        qs = super().get_queryset()
+        
+        if self.request.user.username != 'admin':
+            qs = qs.filter(user=self.request.user)
+            
+        return qs
