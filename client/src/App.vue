@@ -1,5 +1,15 @@
 <script setup>
 
+import useUserStore from './stores/userStore'; 
+import { storeToRefs } from 'pinia'; 
+ 
+const userStore = useUserStore(); 
+const { 
+  isAuthenticated, 
+  username, 
+  userId 
+} = storeToRefs(userStore);
+
 </script>
 
 
@@ -38,7 +48,7 @@
 						<li class="nav-item dropdown">
 							<a class="nav-item dropdown-toggle link" href="#" role="button" data-bs-toggle="dropdown"
 								aria-expanded="false" >
-								Пользователь
+                                {{ username }}
 							</a>
 							<ul class="dropdown-menu">
 								<li><a class="dropdown-item" href="/admin">Админка</a></li>

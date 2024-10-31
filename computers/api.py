@@ -6,6 +6,9 @@ from rest_framework import mixins
 
 from computers.serializers import ComputerSerializer, VideoCardSerializer, MotherboardSerializer, ProcessorSerializer, PowerUnitSerializer
 
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 class VideoCardViewset(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -96,3 +99,16 @@ class ComputersViewset(
             qs = qs.filter(user=self.request.user)
             
         return qs
+    
+class UserViewSet(GenericViewSet): 
+    @action(url_path="info", methods=["GET"], detail=False) 
+    def get_info(self, request, *args, **kwargs): 
+        data = { 
+            "is_authenticated": request.user.is_authenticated 
+        } 
+        if request.user.is_authenticated: 
+            data.update({ 
+                "username": request.user.username, 
+                "user_id": request.user.id 
+            }) 
+        return Response(data)

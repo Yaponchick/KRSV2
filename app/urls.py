@@ -21,7 +21,7 @@ from computers import views
 from django.conf.urls.static import static
 
 from rest_framework.routers import DefaultRouter
-from computers.api import ComputersViewset, VideoCardViewset, MotherboardViewset, ProcessorViewset, PowerUnitViewset
+from computers.api import ComputersViewset, VideoCardViewset, MotherboardViewset, ProcessorViewset, PowerUnitViewset, UserViewSet
 
 router = DefaultRouter()
 router.register("computers",ComputersViewset, basename="computers")
@@ -29,6 +29,7 @@ router.register("VideoCard",VideoCardViewset, basename="VideoCard")
 router.register("Motherboard",MotherboardViewset, basename="Motherboard")
 router.register("Processor",ProcessorViewset, basename="Processor")
 router.register("PowerUnit",PowerUnitViewset, basename="PowerUnit")
+router.register("User",UserViewSet, basename="User")
 
 urlpatterns = [
     path('',views.ShowComputersView.as_view()),
