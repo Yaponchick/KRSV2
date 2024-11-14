@@ -1,10 +1,10 @@
 from typing import Any
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.contrib.auth import logout
 
-from computers.models import Computer,VideoCard,Motherboard,Processor,PowerUnit
-
+from computers.models import Computer, VideoCard, Motherboard, Processor, PowerUnit
 
 class ShowComputersView(TemplateView):
     template_name = "computers/show_computers.html"
@@ -16,5 +16,8 @@ class ShowComputersView(TemplateView):
        context['Motherboard'] = Motherboard.objects.all()
        context['Processor'] = Processor.objects.all()
        context['PowerUnit'] = PowerUnit.objects.all()
-
        return context
+
+def logout_view(request):
+    logout(request)
+    return JsonResponse({"message": "Успешный выход из аккаунта"})

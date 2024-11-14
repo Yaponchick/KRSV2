@@ -65,7 +65,7 @@ async function submitLogin() {
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="/admin">Админка</a></li>
                 <li><a class="dropdown-item" href="#" @click.prevent="openModal">Авторизация</a></li>
-                <li><a class="dropdown-item" href="/logout">Выйти</a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="userStore.logout()">Выйти</a></li>
               </ul>
             </li>
           </ul>
