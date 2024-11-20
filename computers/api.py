@@ -20,6 +20,8 @@ class VideoCardViewset(
     serializer_class = VideoCardSerializer
     
     def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return VideoCard.objects.none()
         qs = super().get_queryset()
         
         if self.request.user.username != 'admin':
@@ -38,6 +40,8 @@ class MotherboardViewset(
     serializer_class = MotherboardSerializer
     
     def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Motherboard.objects.none()
         qs = super().get_queryset()
         
         if self.request.user.username != 'admin':
@@ -57,6 +61,8 @@ class ProcessorViewset(
     serializer_class = ProcessorSerializer
     
     def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Processor.objects.none()
         qs = super().get_queryset()
         
         if self.request.user.username != 'admin':
@@ -75,6 +81,8 @@ class PowerUnitViewset(
     serializer_class = PowerUnitSerializer
 
     def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return PowerUnit.objects.none()
         qs = super().get_queryset()
         
         if self.request.user.username != 'admin':
@@ -93,6 +101,8 @@ class ComputersViewset(
     serializer_class = ComputerSerializer
     
     def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Computer.objects.none()
         qs = super().get_queryset()
         
         if self.request.user.username != 'admin':

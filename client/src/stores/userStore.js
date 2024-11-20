@@ -21,6 +21,25 @@ const useUserStore = defineStore("UserStore", () => {
         }
     }
 
+    // Функция авторизации
+    async function login(credentials) {
+        try {
+            const response = await axios.post("/api/login/", credentials, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+            isAuthenticated.value = true;
+            username.value = response.data.username;
+            userId.value = response.data.user_id;
+            window.location.reload();
+        } catch (error) {
+            console.error("Ошибка авторизации:", error);
+            throw new Error("Не удалось авторизоваться. Проверьте имя пользователя и пароль.");
+        }
+    }
+    
+
     // Функция выхода из аккаунта
     async function logout() {
         try {
@@ -43,6 +62,7 @@ const useUserStore = defineStore("UserStore", () => {
         username, 
         userId,
         fetchUser,
+        login,
         logout 
     };
 });

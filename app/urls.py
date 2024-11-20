@@ -18,11 +18,11 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 from computers import views
-from computers.views import logout_view
 from django.conf.urls.static import static
 
 from rest_framework.routers import DefaultRouter
 from computers.api import ComputersViewset, VideoCardViewset, MotherboardViewset, ProcessorViewset, PowerUnitViewset, UserViewSet
+from computers.views import ShowComputersView, login_view, logout_view
 
 router = DefaultRouter()
 router.register("computers",ComputersViewset, basename="computers")
@@ -36,6 +36,8 @@ urlpatterns = [
     path('',views.ShowComputersView.as_view()),
     path('admin/', admin.site.urls),
     path('api/',include(router.urls)),
+    path('', ShowComputersView.as_view(), name='show_computers'),
+    path('api/login/', login_view, name='login'),
     path('api/logout/', logout_view, name="logout"),
 ]   + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 
