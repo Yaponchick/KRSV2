@@ -13,7 +13,7 @@ class Command(BaseCommand):
         series_power_units = ["Platinum", "Gold", "Bronze", "Silver"]
         model_types_power_units = ["Pro", "X", "G", "M", "Elite"]
 
-        for _ in range(200):
+        for _ in range(3):
             brand = choice(brands_power_units)
             series_name = choice(series_power_units)
             model_type = choice(model_types_power_units)
@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
             PowerUnit.objects.create(
                 model=model_name,
-                price=f"{fake.random_int(min=2000, max=15000)} руб.",
+                price=f"{fake.random_int(min=2000, max=15000)}",
                 networkVoltage=f"{fake.random_int(min=100, max=240)} В",
                 coolingSystem=fake.random_element(elements=["Активное", "Пассивное", "Водяное"]),
                 power=f"{fake.random_int(min=300, max=1000)} Вт",
@@ -39,14 +39,14 @@ class Command(BaseCommand):
         sockets_processors = ["LGA1700", "AM5", "AM4", "LGA1200", "TR4"]
         chipsets_processors = ["Z790", "B760", "X670", "B550", "X570"]
 
-        for _ in range(200):
+        for _ in range(3):
             brand = choice(brands_processors)
             series_name = choice(series_processors[brand])
             model_name = f"{brand} {series_name} {fake.random_int(min=1000, max=9990)}X"
 
             Processor.objects.create(
                 model=model_name,
-                price=f"{fake.random_int(min=5000, max=70000)} руб.",
+                price=f"{fake.random_int(min=5000, max=70000)}",
                 socket=choice(sockets_processors),
                 chipset=choice(chipsets_processors),
                 frequency=f"{fake.random_int(min=2000, max=5000)} МГц",
@@ -60,14 +60,14 @@ class Command(BaseCommand):
         series_motherboards = ["Prime", "TUF", "ROG Strix", "Aorus", "Phantom Gaming"]
         supported_memory_types = ["DDR4", "DDR5"]
 
-        for _ in range(200):
+        for _ in range(3):
             brand = choice(brands_motherboards)
             series_name = choice(series_motherboards)
             model_name = f"{brand} {series_name} {fake.random_int(min=100, max=999)}"
 
             Motherboard.objects.create(
                 model=model_name,
-                price=f"{fake.random_int(min=4000, max=30000)} руб.",
+                price=f"{fake.random_int(min=4000, max=30000)}",
                 compatibleKernels=fake.random_element(elements=["x86", "ARM", "x64"]),
                 processorPowerConnector=f"{fake.random_int(min=4, max=8)}-pin",
                 supportedMemory=choice(supported_memory_types),
@@ -84,7 +84,7 @@ class Command(BaseCommand):
             "Intel": ["Arc A380", "Arc A750", "Arc A770"]
         }
 
-        for _ in range(200):
+        for _ in range(3):
             brand = choice(brands_video_cards)
             model_name = choice(series_video_cards[brand])
             number_fans = fake.random_int(min=1, max=3)
@@ -93,7 +93,7 @@ class Command(BaseCommand):
 
             VideoCard.objects.create(
                 model=f"{brand} {model_name}",
-                price=f"{fake.random_int(min=10000, max=150000)} руб.",
+                price=f"{fake.random_int(min=10000, max=150000)}",
                 numberFans=number_fans,
                 turboFrequency=turbo_frequency,
                 memory_size=memory_size,
@@ -115,7 +115,7 @@ class Command(BaseCommand):
             return
 
         # Генерация компьютеров
-        for _ in range(200):
+        for _ in range(3):
             video_card = choice(video_cards)
             motherboard = choice(motherboards)
             processor = choice(processors)
@@ -138,7 +138,7 @@ class Command(BaseCommand):
             # Создаем объект
             Computer.objects.create(
                 model=model_name,
-                price=f"{total_price} руб.",
+                price=f"{total_price}",
                 computerV_FK=video_card,
                 computerM_FK=motherboard,
                 computerP_FK=processor,

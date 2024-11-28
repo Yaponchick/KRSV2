@@ -2,12 +2,16 @@ from rest_framework.viewsets import GenericViewSet
 
 from computers.models import Computer,VideoCard,Motherboard,Processor,PowerUnit
 
-from rest_framework import mixins
+from rest_framework import mixins, serializers
 
 from computers.serializers import ComputerSerializer, VideoCardSerializer, MotherboardSerializer, ProcessorSerializer, PowerUnitSerializer
 
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+from django.db.models import Count, Avg, Max, Min, Sum
+from django.db.models.functions import Cast
+from django.db.models import FloatField
 
 class VideoCardViewset(
     mixins.ListModelMixin,
@@ -28,6 +32,29 @@ class VideoCardViewset(
             qs = qs.filter(user=self.request.user)
             
         return qs
+    
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+        totalPrice = serializers.FloatField()
+
+    @action(detail=False, methods=["GET"], url_path="stats")
+    def get_stats(self, *args, **kwargs):
+        stats = VideoCard.objects.aggregate(
+            count=Count("*"),
+            avg=Avg("price"),
+            max=Max(Cast('price', FloatField())),
+            min=Min(Cast('price', FloatField())),
+            totalPrice=Sum("price")
+        )
+        
+        print(f"Лог: {stats}")
+        
+        serializer = self.StatsSerializer(instance=stats)
+        return Response(serializer.data)
+
 
 class MotherboardViewset(
     mixins.ListModelMixin,
@@ -48,7 +75,28 @@ class MotherboardViewset(
             qs = qs.filter(user=self.request.user)
             
         return qs
-    
+
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+        totalPrice = serializers.FloatField()
+
+    @action(detail=False, methods=["GET"], url_path="stats")
+    def get_stats(self, *args, **kwargs):
+        stats = Motherboard.objects.aggregate(
+            count=Count("*"),
+            avg=Avg("price"),
+            max=Max(Cast('price', FloatField())),
+            min=Min(Cast('price', FloatField())),
+            totalPrice=Sum("price")
+        )
+        
+        print(f"Лог: {stats}")
+        
+        serializer = self.StatsSerializer(instance=stats)
+        return Response(serializer.data)
 
 class ProcessorViewset(
     mixins.ListModelMixin,
@@ -70,6 +118,28 @@ class ProcessorViewset(
             
         return qs
 
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+        totalPrice = serializers.FloatField()
+
+    @action(detail=False, methods=["GET"], url_path="stats")
+    def get_stats(self, *args, **kwargs):
+        stats = Processor.objects.aggregate(
+            count=Count("*"),
+            avg=Avg("price"),
+            max=Max(Cast('price', FloatField())),
+            min=Min(Cast('price', FloatField())),
+            totalPrice=Sum("price")
+        )
+        
+        print(f"Лог: {stats}")
+        
+        serializer = self.StatsSerializer(instance=stats)
+        return Response(serializer.data)
+
 class PowerUnitViewset(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -89,6 +159,28 @@ class PowerUnitViewset(
             qs = qs.filter(user=self.request.user)
             
         return qs
+
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+        totalPrice = serializers.FloatField()
+
+    @action(detail=False, methods=["GET"], url_path="stats")
+    def get_stats(self, *args, **kwargs):
+        stats = PowerUnit.objects.aggregate(
+            count=Count("*"),
+            avg=Avg("price"),
+            max=Max(Cast('price', FloatField())),
+            min=Min(Cast('price', FloatField())),
+            totalPrice=Sum("price")
+        )
+        
+        print(f"Лог: {stats}")
+        
+        serializer = self.StatsSerializer(instance=stats)
+        return Response(serializer.data)
     
 class ComputersViewset(
     mixins.ListModelMixin,
@@ -109,6 +201,28 @@ class ComputersViewset(
             qs = qs.filter(user=self.request.user)
             
         return qs
+
+    class StatsSerializer(serializers.Serializer):
+        count = serializers.IntegerField()
+        avg = serializers.FloatField()
+        max = serializers.IntegerField()
+        min = serializers.IntegerField()
+        totalPrice = serializers.FloatField()
+
+    @action(detail=False, methods=["GET"], url_path="stats")
+    def get_stats(self, *args, **kwargs):
+        stats = Computer.objects.aggregate(
+            count=Count("*"),
+            avg=Avg("price"),
+            max=Max(Cast('price', FloatField())),
+            min=Min(Cast('price', FloatField())),
+            totalPrice=Sum("price")
+        )
+        
+        print(f"Лог: {stats}")
+        
+        serializer = self.StatsSerializer(instance=stats)
+        return Response(serializer.data)
     
 class UserViewSet(GenericViewSet): 
     @action(url_path="info", methods=["GET"], detail=False) 

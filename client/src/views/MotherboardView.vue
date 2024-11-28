@@ -19,6 +19,29 @@ const computersAddImageUrl = ref();
 const computersEditImageUrl = ref();
 const computersEditPictureRef = ref();
 
+const statistics = ref({
+    totalMotherboard: 0,
+    totalPrice: 0,
+    averagePrice: 0,
+    maxPrice: 0,
+    minPrice: 0
+});
+
+async function fetchStatistics() {
+    try {
+        const r = await axios.get("/api/Motherboard/stats/");
+        statistics.value = {
+            totalMotherboard: r.data.count,
+            totalPrice: r.data.totalPrice ? r.data.totalPrice.toFixed(2) : 0,
+            averagePrice: r.data.avg ? r.data.avg.toFixed(2) : 0,
+            maxPrice: r.data.max ? r.data.max : 0,
+            minPrice: r.data.min ? r.data.min : 0
+        };
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
 async function computersAddPictureChange() {
     computersAddImageUrl.value = URL.createObjectURL(computersPictureRef.value.files[0])
 
@@ -41,6 +64,7 @@ async function confirmDelete() {
     if (motherboardToDelete.value) {
         await axios.delete(`/api/Motherboard/${motherboardToDelete.value.id}/`);
         await fetchMotherboard();
+        await fetchStatistics();
         motherboardToDelete.value = null;
     }
 }
@@ -68,10 +92,12 @@ async function onMotherboardAdd() {
         }
     });
     await fetchMotherboard();
+    await fetchStatistics();
 }
 
 onBeforeMount(async () => {
     await fetchMotherboard();
+    await fetchStatistics();
 });
 
 
@@ -102,6 +128,7 @@ async function onUpdateMotherboard() {
         }
     });
     await fetchMotherboard();
+    await fetchStatistics();
 }
 
 </script>
@@ -267,6 +294,29 @@ async function onUpdateMotherboard() {
                     <div class="col-auto">
                         <img :src="computersAddImageUrl" style="max-height: 60px;" alt="">
                     </div>
+
+                    <div class="p-2">
+                        <div class="stat-item">
+                            <p>Общее количество материнских плат:</p>
+                            <p class="stat-value">{{ statistics.totalMotherboard }} шт.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Общая цена материнских плат:</p>
+                            <p class="stat-value">{{ statistics.totalPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Средняя цена материской платы:</p>
+                            <p class="stat-value">{{ statistics.averagePrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Максимальная цена материской платы:</p>
+                            <p class="stat-value">{{ statistics.maxPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Минимальная цена материнской платы:</p>
+                            <p class="stat-value">{{ statistics.minPrice }} руб.</p>
+                        </div>
+                    </div>
                 </div>
             </form>
             <div>
@@ -308,5 +358,39 @@ async function onUpdateMotherboard() {
     gap: 8px;
     text-align: center;
     align-items: center;
+
+}
+
+.stat-card {
+    margin-top: 20px;
+    padding: 1.5rem;
+    background-color: #ffffffe5;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgb(255, 140, 0);
+    margin-bottom: 1rem;
+    color: #000000;
+}
+
+
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #ff9100;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-item p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    color: #000000;
 }
 </style>

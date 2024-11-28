@@ -14,6 +14,30 @@ const powerUnitdAdd = ref({});
 const PowerUnitAddToEdit = ref({});
 const powerUnitToDelete = ref(null);
 
+
+const statistics = ref({
+    totalPowerUnit: 0,
+    totalPrice: 0,
+    averagePrice: 0,
+    maxPrice: 0,
+    minPrice: 0
+});
+
+async function fetchStatistics() {
+    try {
+        const r = await axios.get("/api/PowerUnit/stats/");
+        statistics.value = {
+            totalPowerUnit: r.data.count,
+            totalPrice: r.data.totalPrice ? r.data.totalPrice.toFixed(2) : 0,
+            averagePrice: r.data.avg ? r.data.avg.toFixed(2) : 0,
+            maxPrice: r.data.max ? r.data.max : 0,
+            minPrice: r.data.min ? r.data.min : 0
+        };
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
 async function fetchPowerUnit() {
     const r = await axios.get("/api/PowerUnit/");
     powerUnit.value = r.data;
@@ -24,10 +48,12 @@ async function onPowerUnitAdd() {
         ...powerUnitdAdd.value,
     });
     await fetchPowerUnit();
+    await fetchStatistics();
 }
 
 onBeforeMount(async () => {
     await fetchPowerUnit();
+    await fetchStatistics();
 });
 
 function onRemoveClick(powerUnit) {
@@ -37,6 +63,7 @@ async function confirmDelete() {
     if (powerUnitToDelete.value) {
         await axios.delete(`/api/PowerUnit/${powerUnitToDelete.value.id}/`);
         await fetchPowerUnit();
+        await fetchStatistics();
         powerUnitToDelete.value = null;
     }
 }
@@ -50,6 +77,7 @@ async function onUpdatePowerUnit() {
         ...PowerUnitAddToEdit.value
     });
     await fetchPowerUnit();
+    await fetchStatistics();
 }
 
 
@@ -187,6 +215,28 @@ async function onUpdatePowerUnit() {
                     <div class="col-auto">
                         <button class="btn btn-primary mt-3">Добавить</button>
                     </div>
+                    <div class="p-2">
+                        <div class="stat-item">
+                            <p>Общее количество блоков питания:</p>
+                            <p class="stat-value">{{ statistics.totalPowerUnit }} шт.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Общая цена блоков питания:</p>
+                            <p class="stat-value">{{ statistics.totalPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Средняя цена блоков питания:</p>
+                            <p class="stat-value">{{ statistics.averagePrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Максимальная цена блока питания:</p>
+                            <p class="stat-value">{{ statistics.maxPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Минимальная цена блока питания:</p>
+                            <p class="stat-value">{{ statistics.minPrice }} руб.</p>
+                        </div>
+                    </div>
                 </div>
             </form>
             <div>
@@ -224,5 +274,38 @@ async function onUpdatePowerUnit() {
     gap: 8px;
     text-align: center;
     align-items: center;
+}
+
+.stat-card {
+    margin-top: 20px;
+    padding: 1.5rem;
+    background-color: #ffffffe5;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgb(255, 140, 0);
+    margin-bottom: 1rem;
+    color: #000000;
+}
+
+
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #ff9100;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-item p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    color: #000000;
 }
 </style>

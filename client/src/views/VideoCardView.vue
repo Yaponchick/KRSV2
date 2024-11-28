@@ -20,6 +20,29 @@ const computersAddImageUrl = ref();
 const computersEditImageUrl = ref();
 const computersEditPictureRef = ref();
 
+const statistics = ref({
+    totalVideoCards: 0,
+    totalPrice: 0,
+    averagePrice: 0,
+    maxPrice: 0,
+    minPrice: 0
+});
+
+async function fetchStatistics() {
+    try {
+        const r = await axios.get("/api/VideoCard/stats/");
+        statistics.value = {
+            totalVideoCards: r.data.count,
+            totalPrice: r.data.totalPrice ? r.data.totalPrice.toFixed(2) : 0,
+            averagePrice: r.data.avg ? r.data.avg.toFixed(2) : 0,
+            maxPrice: r.data.max ? r.data.max : 0,
+            minPrice: r.data.min ? r.data.min : 0
+        };
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
 
 async function computersAddPictureChange() {
     computersAddImageUrl.value = URL.createObjectURL(computersPictureRef.value.files[0])
@@ -39,13 +62,14 @@ function openImageModal(imageUrl) {
 async function fetchVideocards() {
     const r = await axios.get("/api/VideoCard/");
     videoCard.value = r.data;
+    await fetchStatistics();
 }
 
 async function onVideoCardAdd() {
     const formData = new FormData();
 
     formData.append('picture', computersPictureRef.value.files[0]);
-    
+
     formData.set('model', videoCardAdd.value.model)
     formData.set('price', videoCardAdd.value.price)
     formData.set('numberFans', videoCardAdd.value.numberFans)
@@ -58,10 +82,13 @@ async function onVideoCardAdd() {
         }
     });
     await fetchVideocards();
+    await fetchStatistics();
 }
 
 onBeforeMount(async () => {
     await fetchVideocards();
+    await fetchStatistics();
+
 });
 function onRemoveClick(videoCard) {
     videoCardToDelete.value = videoCard;
@@ -70,6 +97,7 @@ async function confirmDelete() {
     if (videoCardToDelete.value) {
         await axios.delete(`/api/VideoCard/${videoCardToDelete.value.id}/`);
         await fetchVideocards();
+        await fetchStatistics();
         videoCardToDelete.value = null;
     }
 }
@@ -100,6 +128,7 @@ async function onUpdateVideoCard() {
         }
     });
     await fetchVideocards();
+    await fetchStatistics();
 }
 
 
@@ -261,6 +290,28 @@ async function onUpdateVideoCard() {
                     <div class="col-auto">
                         <img :src="computersAddImageUrl" style="max-height: 60px;" alt="">
                     </div>
+                    <div class="p-2">
+                        <div class="stat-item">
+                            <p>Общее количество видеокарт:</p>
+                            <p class="stat-value">{{ statistics.totalVideoCards }} шт.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Общая цена видеокарт:</p>
+                            <p class="stat-value">{{ statistics.totalPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Средняя цена видеокарты:</p>
+                            <p class="stat-value">{{ statistics.averagePrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Максимальная цена видеокарты:</p>
+                            <p class="stat-value">{{ statistics.maxPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Минимальная цена видеокарты:</p>
+                            <p class="stat-value">{{ statistics.minPrice }} руб.</p>
+                        </div>
+                    </div>
                 </div>
             </form>
             <div>
@@ -288,7 +339,6 @@ async function onUpdateVideoCard() {
     </div>
 </template>
 
-
 <style lang="scss" scoped>
 .videocard-item {
     padding: 0.5rem;
@@ -301,5 +351,38 @@ async function onUpdateVideoCard() {
     gap: 8px;
     text-align: center;
     align-items: center;
+}
+
+.stat-card {
+    margin-top: 20px;
+    padding: 1.5rem;
+    background-color: #ffffffe5;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgb(255, 140, 0);
+    margin-bottom: 1rem;
+    color: #000000;
+}
+
+
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #ff9100;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-item p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    color: #000000;
 }
 </style>

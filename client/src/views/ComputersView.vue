@@ -19,6 +19,29 @@ const computersToDelete = ref(null);
 const computersToAdd = ref({});
 const computersToEdit = ref({});
 
+const statistics = ref({
+    totalComputer: 0,
+    totalPrice: 0,
+    averagePrice: 0,
+    maxPrice: 0,
+    minPrice: 0
+});
+
+async function fetchStatistics() {
+    try {
+        const r = await axios.get("/api/computers/stats/");
+        statistics.value = {
+            totalComputer: r.data.count,
+            totalPrice: r.data.totalPrice ? r.data.totalPrice.toFixed(2) : 0,
+            averagePrice: r.data.avg ? r.data.avg.toFixed(2) : 0,
+            maxPrice: r.data.max ? r.data.max : 0,
+            minPrice: r.data.min ? r.data.min : 0
+        };
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
 async function fetchPowerUnit() {
     const r = await axios.get("/api/PowerUnit/");
     powerUnit.value = r.data;
@@ -51,6 +74,7 @@ async function onComputerAdd() {
         ...computersToAdd.value,
     });
     await fetchComputers();
+    await fetchStatistics();
 }
 
 onBeforeMount(async () => {
@@ -59,6 +83,7 @@ onBeforeMount(async () => {
     await fetchMotherboard();
     await fetchProcessor();
     await fetchPowerUnit();
+    await fetchStatistics();
 });
 
 
@@ -69,6 +94,7 @@ async function confirmDelete() {
     if (computersToDelete.value) {
         await axios.delete(`/api/computers/${computersToDelete.value.id}/`);
         await fetchComputers();
+        await fetchStatistics();
         computersToDelete.value = null;
     }
 }
@@ -78,6 +104,7 @@ async function onUpdateComputer() {
         ...computersToEdit.value
     });
     await fetchComputers();
+    await fetchStatistics();
 }
 
 async function onComputerEditClick(computer) {
@@ -266,6 +293,28 @@ async function onComputerEditClick(computer) {
                     <div class="col-auto">
                         <button class="btn btn-primary mt-3">Добавить</button>
                     </div>
+                    <div class="p-2">
+                        <div class="stat-item">
+                            <p>Общее количество компьютеров:</p>
+                            <p class="stat-value">{{ statistics.totalComputer }} шт.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Общая цена компьютеров:</p>
+                            <p class="stat-value">{{ statistics.totalPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Средняя цена компьютеров:</p>
+                            <p class="stat-value">{{ statistics.averagePrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Максимальная цена компьюетра:</p>
+                            <p class="stat-value">{{ statistics.maxPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Минимальная цена компьютера:</p>
+                            <p class="stat-value">{{ statistics.minPrice }} руб.</p>
+                        </div>
+                    </div>
                 </div>
             </form>
             <div>
@@ -302,5 +351,37 @@ async function onComputerEditClick(computer) {
     gap: 8px;
     text-align: center;
     align-items: center;
+}
+.stat-card {
+    margin-top: 20px;
+    padding: 1.5rem;
+    background-color: #ffffffe5;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgb(255, 140, 0);
+    margin-bottom: 1rem;
+    color: #000000;
+}
+
+
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #ff9100;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-item p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    color: #000000;
 }
 </style>
