@@ -238,7 +238,43 @@ async function onUpdateVideoCard() {
             </div>
         </form>
 
-
+        <!--Modal static-->
+        <div class="modal fade" id="statisticsModal" tabindex="-1" aria-labelledby="statisticsModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="statisticsModalLabel">Статистика</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="stat-item">
+                            <p>Общее количество компьютеров:</p>
+                            <p class="stat-value">{{ statistics.totalVideoCards }} шт.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Общая цена компьютеров:</p>
+                            <p class="stat-value">{{ statistics.totalPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Средняя цена компьютеров:</p>
+                            <p class="stat-value">{{ statistics.averagePrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Максимальная цена компьютера:</p>
+                            <p class="stat-value">{{ statistics.maxPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Минимальная цена компьютера:</p>
+                            <p class="stat-value">{{ statistics.minPrice }} руб.</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="p-2">
             <form @submit.prevent.stop="onVideoCardAdd">
@@ -283,35 +319,19 @@ async function onUpdateVideoCard() {
                     <div class="col-auto">
                         <button class="btn btn-primary mt-3">Добавить</button>
                     </div>
-                    <div class="col-auto">
+                    <div class="col-auto mt-3">
                         <input class="form-control" type="file" ref="computersPictureRef"
                             @change="computersAddPictureChange" required>
                     </div>
                     <div class="col-auto">
                         <img :src="computersAddImageUrl" style="max-height: 60px;" alt="">
                     </div>
-                    <div class="p-2">
-                        <div class="stat-item">
-                            <p>Общее количество видеокарт:</p>
-                            <p class="stat-value">{{ statistics.totalVideoCards }} шт.</p>
-                        </div>
-                        <div class="stat-item">
-                            <p>Общая цена видеокарт:</p>
-                            <p class="stat-value">{{ statistics.totalPrice }} руб.</p>
-                        </div>
-                        <div class="stat-item">
-                            <p>Средняя цена видеокарты:</p>
-                            <p class="stat-value">{{ statistics.averagePrice }} руб.</p>
-                        </div>
-                        <div class="stat-item">
-                            <p>Максимальная цена видеокарты:</p>
-                            <p class="stat-value">{{ statistics.maxPrice }} руб.</p>
-                        </div>
-                        <div class="stat-item">
-                            <p>Минимальная цена видеокарты:</p>
-                            <p class="stat-value">{{ statistics.minPrice }} руб.</p>
-                        </div>
-                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-info mt-3 mb-2" data-bs-toggle="modal"
+                        data-bs-target="#statisticsModal">
+                        Статистика
+                    </button>
                 </div>
             </form>
             <div>

@@ -114,4 +114,19 @@ async function submitLogin() {
   display: block;
   opacity: 1;
 }
+
+.router-link-active {
+  position: relative;
+}
+
+.router-link-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0px;
+  height: 2px; 
+  background-color: #007bff;
+}
+
 </style>

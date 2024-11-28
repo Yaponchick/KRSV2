@@ -118,14 +118,7 @@ async function onComputerEditClick(computer) {
         computerPU_FK_1: computer.computerPU_FK.id,
     };
 }
-
-
-
-
-
 </script>
-
-
 
 <template>
     <div class="container-fluid">
@@ -151,7 +144,6 @@ async function onComputerEditClick(computer) {
             </div>
         </div>
 
-        <!--Modal-->
         <form>
             <div class="modal fade" id="editComputerModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                 aria-hidden="true">
@@ -223,12 +215,43 @@ async function onComputerEditClick(computer) {
             </div>
         </form>
 
-
-
-
-
-
-
+        <!--Modal static-->
+        <div class="modal fade" id="statisticsModal" tabindex="-1" aria-labelledby="statisticsModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="statisticsModalLabel">Статистика</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="stat-item">
+                            <p>Общее количество компьютеров:</p>
+                            <p class="stat-value">{{ statistics.totalComputer }} шт.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Общая цена компьютеров:</p>
+                            <p class="stat-value">{{ statistics.totalPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Средняя цена компьютеров:</p>
+                            <p class="stat-value">{{ statistics.averagePrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Максимальная цена компьютера:</p>
+                            <p class="stat-value">{{ statistics.maxPrice }} руб.</p>
+                        </div>
+                        <div class="stat-item">
+                            <p>Минимальная цена компьютера:</p>
+                            <p class="stat-value">{{ statistics.minPrice }} руб.</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 
         <div class="p-2">
@@ -278,7 +301,6 @@ async function onComputerEditClick(computer) {
                         </div>
                     </div>
 
-
                     <div class="col-md-2">
                         <div class="form-floating">
                             <select name="" id="" class="form-select" v-model="computersToAdd.computerPU_FK_1" required>
@@ -287,33 +309,14 @@ async function onComputerEditClick(computer) {
                             <label for="floatingInput">Блок питания</label>
                         </div>
                     </div>
-
-
-
                     <div class="col-auto">
-                        <button class="btn btn-primary mt-3">Добавить</button>
+                        <button class="btn btn-primary mt-3 mb-2">Добавить</button>
                     </div>
-                    <div class="p-2">
-                        <div class="stat-item">
-                            <p>Общее количество компьютеров:</p>
-                            <p class="stat-value">{{ statistics.totalComputer }} шт.</p>
-                        </div>
-                        <div class="stat-item">
-                            <p>Общая цена компьютеров:</p>
-                            <p class="stat-value">{{ statistics.totalPrice }} руб.</p>
-                        </div>
-                        <div class="stat-item">
-                            <p>Средняя цена компьютеров:</p>
-                            <p class="stat-value">{{ statistics.averagePrice }} руб.</p>
-                        </div>
-                        <div class="stat-item">
-                            <p>Максимальная цена компьюетра:</p>
-                            <p class="stat-value">{{ statistics.maxPrice }} руб.</p>
-                        </div>
-                        <div class="stat-item">
-                            <p>Минимальная цена компьютера:</p>
-                            <p class="stat-value">{{ statistics.minPrice }} руб.</p>
-                        </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-info mt-3 mb-2" data-bs-toggle="modal"
+                            data-bs-target="#statisticsModal">
+                            Статистика
+                        </button>
                     </div>
                 </div>
             </form>
@@ -337,8 +340,6 @@ async function onComputerEditClick(computer) {
     </div>
 </template>
 
-
-
 <style lang="scss" scoped>
 .computers-item {
     padding: 0.5rem;
@@ -352,6 +353,7 @@ async function onComputerEditClick(computer) {
     text-align: center;
     align-items: center;
 }
+
 .stat-card {
     margin-top: 20px;
     padding: 1.5rem;
@@ -361,8 +363,6 @@ async function onComputerEditClick(computer) {
     margin-bottom: 1rem;
     color: #000000;
 }
-
-
 
 .stat-item {
     display: flex;
