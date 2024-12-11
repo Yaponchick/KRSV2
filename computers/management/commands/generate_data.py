@@ -49,7 +49,7 @@ class Command(BaseCommand):
                 price=f"{fake.random_int(min=5000, max=70000)}",
                 socket=choice(sockets_processors),
                 chipset=choice(chipsets_processors),
-                frequency=f"{fake.random_int(min=2000, max=5000)} МГц",
+                frequency=f"{fake.random_int(min=2000, max=5000)}",
                 user=None
             )
 
@@ -89,7 +89,7 @@ class Command(BaseCommand):
             model_name = choice(series_video_cards[brand])
             number_fans = fake.random_int(min=1, max=3)
             turbo_frequency = f"{fake.random_int(min=1200, max=2500)} МГц"
-            memory_size = f"{fake.random_int(min=4, max=24)} ГБ"
+            memory_size = f"{fake.random_int(min=4, max=24)}"
 
             VideoCard.objects.create(
                 model=f"{brand} {model_name}",

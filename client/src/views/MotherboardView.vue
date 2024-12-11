@@ -131,6 +131,32 @@ async function onUpdateMotherboard() {
     await fetchStatistics();
 }
 
+
+const filters = ref({
+    model: '',
+    price: '',
+    minPrice: '',
+    compatibleKernels: '',
+    processorPowerConnector: '',
+    supportedMemory: ''
+});
+
+
+const motherboardFiltered = computed(() => {
+    return motherboard.value.filter(item => {
+        return (
+            (!filters.value.model || item.model.includes(filters.value.model)) &&
+            (!filters.value.price || item.price <= parseFloat(filters.value.price)) &&
+            (!filters.value.minPrice || item.price >= parseFloat(filters.value.minPrice)) &&
+            (!filters.value.compatibleKernels || item.compatibleKernels.includes(filters.value.compatibleKernels)) &&
+            (!filters.value.processorPowerConnector || item.processorPowerConnector.includes(filters.value.processorPowerConnector)) &&
+            (!filters.value.supportedMemory || item.supportedMemory.includes(filters.value.supportedMemory))
+        );
+    });
+});
+
+
+
 </script>
 
 
@@ -341,8 +367,34 @@ async function onUpdateMotherboard() {
                     </button>
                 </div>
             </form>
+            <div class="filter-section mb-4">
+                <div class="row">
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.model" placeholder="Модель" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" v-model="filters.price" placeholder="Макс. цена" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" v-model="filters.minPrice" placeholder="Мин. цена" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.compatibleKernels"
+                            placeholder="Совм. ядра" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.processorPowerConnector"
+                            placeholder="Разъем питания" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.supportedMemory"
+                            placeholder="Память" />
+                    </div>
+
+                </div>
+            </div>
             <div>
-                <div v-for="item in motherboard" class="motherboard-item">
+                <div v-for="item in motherboardFiltered" :key="item.id" class="motherboard-item">
                     <div>{{ item.model }}</div>
                     <div>{{ item.price }}</div>
                     <div>{{ item.compatibleKernels }}</div>

@@ -79,6 +79,27 @@ async function onUpdatePowerUnit() {
     await fetchPowerUnit();
     await fetchStatistics();
 }
+const filters = ref({
+    model: '',
+    minPrice: '',
+    maxPrice: '',
+    networkVoltage: '',
+    coolingSystem: '',
+    power: ''
+});
+
+const powerUnitFiltered = computed(() => {
+    return powerUnit.value.filter(item => {
+        return (
+            (!filters.value.model || item.model.includes(filters.value.model)) &&
+            (!filters.value.minPrice || parseFloat(item.price) >= parseFloat(filters.value.minPrice)) &&
+            (!filters.value.maxPrice || parseFloat(item.price) <= parseFloat(filters.value.maxPrice)) &&
+            (!filters.value.networkVoltage || item.networkVoltage.includes(filters.value.networkVoltage)) &&
+            (!filters.value.coolingSystem || item.coolingSystem.includes(filters.value.coolingSystem)) &&
+            (!filters.value.power || parseFloat(item.power) === parseFloat(filters.value.power))
+        );
+    });
+});
 
 
 </script>
@@ -259,22 +280,49 @@ async function onUpdatePowerUnit() {
                     </button>
                 </div>
             </form>
+            <form @submit.prevent>
+                <div class="row mb-3">
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.model" placeholder="Модель" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" v-model="filters.minPrice" placeholder="Мин. цена" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" v-model="filters.maxPrice" placeholder="Макс. цена" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.networkVoltage"
+                            placeholder="Напряжение" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.coolingSystem"
+                            placeholder="Охлаждение" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" v-model="filters.power" placeholder="Мощность" />
+                    </div>
+                </div>
+            </form>
+
             <div>
-                <div v-for="item in powerUnit" class="powerUnit-item">
+                <div v-for="item in powerUnitFiltered" :key="item.id" class="powerUnit-item">
                     <div>{{ item.model }}</div>
                     <div>{{ item.price }}</div>
                     <div>{{ item.networkVoltage }}</div>
                     <div>{{ item.coolingSystem }}</div>
                     <div>{{ item.power }}</div>
 
-
                     <button class="btn btn-success" @click="onPowerUnitEditClick(item)" data-bs-toggle="modal"
-                        data-bs-target="#editPowerUnitModal"> <i class="bi bi-pencil"> </i></button>
+                        data-bs-target="#editPowerUnitModal">
+                        <i class="bi bi-pencil"></i>
+                    </button>
                     <button class="btn btn-danger" @click="onRemoveClick(item)" data-bs-toggle="modal"
                         data-bs-target="#deleteConfirmationModal">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
+
             </div>
         </div>
     </div>

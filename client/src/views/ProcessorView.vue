@@ -80,7 +80,32 @@ async function onUpdateProcessor() {
     await fetchStatistics();
 }
 
+const filters = ref({
+    model: '',
+    socket: '',
+    chipset: '',
+    frequency: null,
+    priceMin: null,
+    priceMax: null
+});
 
+// Функция для фильтрации процессоров
+const filteredProcessors = computed(() => {
+    return processor.value.filter(item => {
+        const matchModel = filters.value.model ? item.model.includes(filters.value.model) : true;
+        const matchSocket = filters.value.socket ? item.socket.includes(filters.value.socket) : true;
+        const matchChipset = filters.value.chipset ? item.chipset.includes(filters.value.chipset) : true;
+        const matchFrequency = filters.value.frequency
+            ? Number(item.frequency) === Number(filters.value.frequency)
+            : true;
+        const priceMin = filters.value.priceMin ? Number(filters.value.priceMin) : null;
+        const priceMax = filters.value.priceMax ? Number(filters.value.priceMax) : null;
+        const matchPriceMin = priceMin !== null ? item.price >= priceMin : true;
+        const matchPriceMax = priceMax !== null ? item.price <= priceMax : true;
+
+        return matchModel && matchSocket && matchChipset && matchFrequency && matchPriceMin && matchPriceMax;
+    });
+});
 </script>
 
 
@@ -257,13 +282,36 @@ async function onUpdateProcessor() {
                     </button>
                 </div>
             </form>
+            <form class="filter-form">
+                <div class="row">
+                    <div class="col-md-2">
+                        <input type="text" v-model="filters.model" class="form-control" placeholder="Модель" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" v-model="filters.socket" class="form-control" placeholder="Сокет" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" v-model="filters.chipset" class="form-control" placeholder="Чипсет" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" v-model="filters.frequency" class="form-control" placeholder="Частота" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" v-model="filters.priceMin" class="form-control" placeholder="Мин. цена" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" v-model="filters.priceMax" class="form-control" placeholder="Макс. цена" />
+                    </div>
+                </div>
+            </form>
             <div>
-                <div v-for="item in processor" class="processor-item">
+                <div v-for="item in filteredProcessors" :key="item.id" class="processor-item">
                     <div>{{ item.model }}</div>
-                    <div>{{ item.price }}</div>
                     <div>{{ item.socket }}</div>
                     <div>{{ item.chipset }}</div>
                     <div>{{ item.frequency }}</div>
+                    <div>{{ item.price }}</div>
+
 
 
                     <button class="btn btn-success" @click="onProcessorEditClick(item)" data-bs-toggle="modal"

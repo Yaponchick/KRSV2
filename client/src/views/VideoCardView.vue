@@ -131,6 +131,37 @@ async function onUpdateVideoCard() {
     await fetchStatistics();
 }
 
+const filters = ref({
+    model: '',
+    numberFans: '',
+    turboFrequency: '',
+    memory_size: '',
+    priceMin: null,
+    priceMax: null,
+});
+
+const filteredVideoCards = computed(() => {
+    if (!Array.isArray(videoCard.value)) {
+        return []; // Возвращаем пустой массив, если данные не готовы
+    }
+    return videoCard.value.filter(item => {
+        const matchModel = filters.value.model ? item.model.includes(filters.value.model) : true;
+        const matchNumberFans = filters.value.numberFans ? item.numberFans.toString().includes(filters.value.numberFans) : true;
+        const matchTurboFrequency = filters.value.turboFrequency ? item.turboFrequency.toString().includes(filters.value.turboFrequency) : true;
+        const matchMemorySize = filters.value.memory_size 
+            ? Number(item.memory_size) === Number(filters.value.memory_size) 
+            : true;
+
+        const priceMin = filters.value.priceMin ? Number(filters.value.priceMin) : null;
+        const priceMax = filters.value.priceMax ? Number(filters.value.priceMax) : null;
+
+        const matchPriceMin = priceMin !== null ? item.price >= priceMin : true;
+        const matchPriceMax = priceMax !== null ? item.price <= priceMax : true;
+
+        return matchModel && matchNumberFans && matchTurboFrequency && matchMemorySize && matchPriceMin && matchPriceMax;
+    });
+});
+
 
 </script>
 
@@ -334,19 +365,51 @@ async function onUpdateVideoCard() {
                     </button>
                 </div>
             </form>
+            <div class="filters mb-3">
+                <div class="row">
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.model"
+                            placeholder="Фильтр по модели" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" v-model="filters.priceMin" placeholder="Цена от" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" v-model="filters.priceMax" placeholder="Цена до" />
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" v-model="filters.numberFans">
+                            <option value="">Все вентиляторы</option>
+                            <option v-for="fan in [1, 2, 3, 4]" :key="fan" :value="fan">
+                                {{ fan }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.turboFrequency"
+                            placeholder="Турбочастота" />
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" v-model="filters.memory_size">
+                            <option value="">Любая память</option>
+                            <option v-for="memory in [1, 2, 4, 8, 16, 18]" :key="memory" :value="memory">
+                                {{ memory }} ГБ
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
             <div>
-                <div v-for="item in videoCard" class="videocard-item">
+                <div v-for="item in filteredVideoCards" :key="item.id" class="videocard-item">
                     <div>{{ item.model }}</div>
                     <div>{{ item.price }}</div>
                     <div>{{ item.numberFans }}</div>
                     <div>{{ item.turboFrequency }}</div>
                     <div>{{ item.memory_size }}</div>
-
                     <div v-show="item.picture">
                         <img :src="item.picture" style="max-height: 60px;" @click="openImageModal(item.picture)" alt=""
                             data-bs-toggle="modal" data-bs-target="#imageModal">
                     </div>
-
                     <button class="btn btn-success" @click="onVideoCardEditClick(item)" data-bs-toggle="modal"
                         data-bs-target="#editVideoCardModal"> <i class="bi bi-pencil"> </i></button>
                     <button class="btn btn-danger" @click="onRemoveClick(item)" data-bs-toggle="modal"
@@ -354,6 +417,7 @@ async function onUpdateVideoCard() {
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
+
             </div>
         </div>
     </div>

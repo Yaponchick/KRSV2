@@ -118,6 +118,30 @@ async function onComputerEditClick(computer) {
         computerPU_FK_1: computer.computerPU_FK.id,
     };
 }
+const filters = ref({
+    model: '',
+    minPrice: '',
+    maxPrice: '',
+    videoCardModel: '',
+    motherboardModel: '',
+    processorModel: '',
+    powerUnitModel: ''
+});
+
+const computersFiltered = computed(() => {
+    return computers.value.filter(item => {
+        return (
+            (!filters.value.model || item.model.includes(filters.value.model)) &&
+            (!filters.value.minPrice || parseFloat(item.price) >= parseFloat(filters.value.minPrice)) &&
+            (!filters.value.maxPrice || parseFloat(item.price) <= parseFloat(filters.value.maxPrice)) &&
+            (!filters.value.videoCardModel || item.computerV_FK.model.includes(filters.value.videoCardModel)) &&
+            (!filters.value.motherboardModel || item.computerM_FK.model.includes(filters.value.motherboardModel)) &&
+            (!filters.value.processorModel || item.computerP_FK.model.includes(filters.value.processorModel)) &&
+            (!filters.value.powerUnitModel || item.computerPU_FK.model.includes(filters.value.powerUnitModel))
+        );
+    });
+});
+
 </script>
 
 <template>
@@ -155,7 +179,7 @@ async function onComputerEditClick(computer) {
                         </div>
                         <div class="modal-body">
                             <div class="row">
-                                <div class="col-12 col-md-4">
+                                <div class="col-12 col-md-2">
                                     <div class="form-floating">
                                         <input type="text" class="form-control" v-model="computersToEdit.model" />
                                         <label for="floatingInput">Модель</label>
@@ -320,8 +344,37 @@ async function onComputerEditClick(computer) {
                     </div>
                 </div>
             </form>
+            <form @submit.prevent>
+                <div class="row mb-3 mt-3">
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.model" placeholder="Модель" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" v-model="filters.minPrice" placeholder="Мин. цена" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" v-model="filters.maxPrice" placeholder="Макс. цена" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.videoCardModel"
+                            placeholder="Видеокарта" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.motherboardModel"
+                            placeholder="Материнская плата" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control" v-model="filters.processorModel"
+                            placeholder="Процессор" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control mt-2" v-model="filters.powerUnitModel"
+                            placeholder="Блок питания" />
+                    </div>
+                </div>
+            </form>
             <div>
-                <div v-for="item in computers" class="computers-item">
+                <div v-for="item in computersFiltered " :key="item.id" class="computers-item">
                     <div>{{ item.model }}</div>
                     <div>{{ item.price }}</div>
                     <div>{{ item.computerV_FK.model }}</div>
