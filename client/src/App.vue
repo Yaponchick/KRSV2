@@ -1,16 +1,18 @@
 <script setup>
-import { ref } from 'vue';
-import useUserStore from './stores/userStore'; // Подключаем userStore
+import { ref, onBeforeMount } from 'vue';
+import useUserStore from './stores/userStore';
 import { storeToRefs } from 'pinia';
+import axios from 'axios';
 
 const userStore = useUserStore();
-const { username } = storeToRefs(userStore);
-
-const showModal = ref(false); // Контролирует отображение модального окна
+const { username, isAuthenticated, userId } = storeToRefs(userStore);
+const showModal = ref(false);
 const loginUsername = ref('');
 const loginPassword = ref('');
 
-// Открытие и закрытие модального окна
+const authors = ref([]);
+const isLoading = ref(true); 
+
 function openModal() {
   showModal.value = true;
 }
@@ -19,16 +21,55 @@ function closeModal() {
   showModal.value = false;
 }
 
-// Отправка данных для авторизации
 async function submitLogin() {
   try {
     await userStore.login({ username: loginUsername.value, password: loginPassword.value });
-    closeModal(); // Закрываем модальное окно после успешной авторизации
+    closeModal();
   } catch (error) {
     console.error('Ошибка авторизации:', error);
     alert('Не удалось авторизоваться. Проверьте имя пользователя и пароль.');
   }
 }
+
+async function fetchUser() {
+  try {
+    const r = await axios.get("/api/User/info/");
+    isAuthenticated.value = r.data.is_authenticated;
+    username.value = r.data.username;
+    userId.value = r.data.user_id;
+  } catch (error) {
+    console.error("Ошибка при получении данных пользователя:", error);
+    isAuthenticated.value = false;
+    username.value = "";
+    userId.value = null;
+  } finally {
+    isLoading.value = false; 
+  }
+}
+
+onBeforeMount(() => {
+  const storedAuthors = localStorage.getItem("authors");
+  if (storedAuthors) {
+    authors.value = JSON.parse(storedAuthors);
+  }
+
+  const storedIsAuthenticated = localStorage.getItem("isAuthenticated");
+  const storedUsername = localStorage.getItem("username");
+  const storedUserId = localStorage.getItem("userId");
+
+  if (storedIsAuthenticated && storedUsername && storedUserId) {
+    isAuthenticated.value = storedIsAuthenticated === "true";
+    username.value = storedUsername;
+    userId.value = storedUserId;
+  }
+
+  if (isAuthenticated.value && username.value === 'admin') {
+    fetchAuthors();
+  }
+
+  fetchUser();
+});
+
 </script>
 
 <template>
@@ -36,7 +77,8 @@ async function submitLogin() {
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">Сборщик</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+          aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-between" id="navbarNavDropdown">
@@ -59,7 +101,8 @@ async function submitLogin() {
           </ul>
           <ul class="navbar-nav">
             <li class="nav-item dropdown">
-              <a class="nav-item dropdown-toggle link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="nav-item dropdown-toggle link" href="#" role="button" data-bs-toggle="dropdown"
+                aria-expanded="false">
                 {{ username }}
               </a>
               <ul class="dropdown-menu">
@@ -73,9 +116,10 @@ async function submitLogin() {
       </div>
     </nav>
   </div>
-  
+
   <!-- Модальное окно для авторизации -->
-  <div class="modal fade" :class="{ show: showModal }" tabindex="-1" v-if="showModal" style="display: block;" role="dialog">
+  <div class="modal fade" :class="{ show: showModal }" tabindex="-1" v-if="showModal" style="display: block;"
+    role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -108,25 +152,3 @@ async function submitLogin() {
     </div>
   </div>
 </template>
-
-<style scoped>
-.modal.show {
-  display: block;
-  opacity: 1;
-}
-
-.router-link-active {
-  position: relative;
-}
-
-.router-link-active::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0px;
-  height: 2px; 
-  background-color: #007bff;
-}
-
-</style>

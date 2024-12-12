@@ -13,6 +13,11 @@ const processor = ref({});
 const ProcessordAdd = ref({});
 const ProcessorAddToEdit = ref({});
 const processorToDelete = ref(null);
+const authors = ref([]);
+const isAuthenticated = ref(false);
+const username = ref('');
+const userId = ref(null);
+const isLoading = ref(false);
 
 const statistics = ref({
     totalProcessor: 0,
@@ -50,11 +55,60 @@ async function onProcessorAdd() {
     await fetchStatistics();
 }
 
+async function fetchUser() {
+    try {
+        const r = await axios.get("/api/User/info/");
+        isAuthenticated.value = r.data.is_authenticated;
+        username.value = r.data.username;
+        userId.value = r.data.user_id;
+    } catch (error) {
+        console.error("Ошибка при получении данных пользователя:", error);
+        isAuthenticated.value = false;
+        username.value = "";
+        userId.value = null;
+    } finally {
+        isLoading.value = false;
+    }
+}
+
+async function fetchAuthors() {
+    try {
+        const response = await axios.get("/api/User/authors/");
+        console.log("Список авторов:", response.data);
+        authors.value = response.data;
+
+        localStorage.setItem("authors", JSON.stringify(response.data));
+    } catch (error) {
+        console.error("Ошибка при получении списка авторов:", error);
+        authors.value = [];
+        localStorage.removeItem("authors");
+    }
+}
+
 onBeforeMount(async () => {
     await fetchProcessor();
     await fetchStatistics();
-});
+    const storedAuthors = localStorage.getItem("authors");
+    if (storedAuthors) {
+        authors.value = JSON.parse(storedAuthors);
+    }
 
+    const storedIsAuthenticated = localStorage.getItem("isAuthenticated");
+    const storedUsername = localStorage.getItem("username");
+    const storedUserId = localStorage.getItem("userId");
+
+    if (storedIsAuthenticated && storedUsername && storedUserId) {
+        isAuthenticated.value = storedIsAuthenticated === "true";
+        username.value = storedUsername;
+        userId.value = storedUserId;
+    }
+
+    if (isAuthenticated.value && username.value === 'admin') {
+        fetchAuthors();
+    }
+
+    fetchUser();
+});
 
 function onRemoveClick(processor) {
     processorToDelete.value = processor;
@@ -80,13 +134,18 @@ async function onUpdateProcessor() {
     await fetchStatistics();
 }
 
+function selectAuthor(authorId) {
+    filters.value.user = authorId;
+}
+
 const filters = ref({
     model: '',
     socket: '',
     chipset: '',
     frequency: null,
     priceMin: null,
-    priceMax: null
+    priceMax: null,
+    user: ''
 });
 
 // Функция для фильтрации процессоров
@@ -102,10 +161,12 @@ const filteredProcessors = computed(() => {
         const priceMax = filters.value.priceMax ? Number(filters.value.priceMax) : null;
         const matchPriceMin = priceMin !== null ? item.price >= priceMin : true;
         const matchPriceMax = priceMax !== null ? item.price <= priceMax : true;
+        const matchUser = !filters.value.user || item.user === filters.value.user;
 
-        return matchModel && matchSocket && matchChipset && matchFrequency && matchPriceMin && matchPriceMax;
+        return matchModel && matchSocket && matchChipset && matchFrequency && matchPriceMin && matchPriceMax && matchUser;
     });
 });
+
 </script>
 
 
@@ -200,23 +261,23 @@ const filteredProcessors = computed(() => {
                     </div>
                     <div class="modal-body">
                         <div class="stat-item">
-                            <p>Общее количество компьютеров:</p>
+                            <p>Общее количество процессоров:</p>
                             <p class="stat-value">{{ statistics.totalProcessor }} шт.</p>
                         </div>
                         <div class="stat-item">
-                            <p>Общая цена компьютеров:</p>
+                            <p>Общая цена процессоров:</p>
                             <p class="stat-value">{{ statistics.totalPrice }} руб.</p>
                         </div>
                         <div class="stat-item">
-                            <p>Средняя цена компьютеров:</p>
+                            <p>Средняя цена процессоров:</p>
                             <p class="stat-value">{{ statistics.averagePrice }} руб.</p>
                         </div>
                         <div class="stat-item">
-                            <p>Максимальная цена компьютера:</p>
+                            <p>Максимальная цена процессора:</p>
                             <p class="stat-value">{{ statistics.maxPrice }} руб.</p>
                         </div>
                         <div class="stat-item">
-                            <p>Минимальная цена компьютера:</p>
+                            <p>Минимальная цена процессора:</p>
                             <p class="stat-value">{{ statistics.minPrice }} руб.</p>
                         </div>
                     </div>
@@ -304,6 +365,31 @@ const filteredProcessors = computed(() => {
                     </div>
                 </div>
             </form>
+            <div class="col-md-2">
+                <ul class="nav">
+                    <li v-if="isAuthenticated && username === 'admin'" class="nav-item dropdown"
+                        style="list-style-type: none;">
+                        <a class="nav-link dropdown-toggle" href="#" id="authorsDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false" style="font-weight: bold; color: #ff9100;">
+                            <i class="bi bi-person-circle"></i> Пользователи
+                        </a>
+                        <ul class="dropdown-menu shadow-lg p-3 rounded" aria-labelledby="authorsDropdown"
+                            style="min-width: 200px; list-style-type: none;">
+                            <li v-if="authors.length === 0" class="dropdown-item text-muted">Нет доступных авторов</li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click.prevent="selectAuthor(null)">
+                                    <i class="bi bi-person-lines-fill"></i> Все пользователи
+                                </a>
+                            </li>
+                            <li v-for="author in authors" :key="author.id">
+                                <a class="dropdown-item" href="#" @click.prevent="selectAuthor(author.id)">
+                                    <i class="bi bi-person"></i> {{ author.username }}
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
             <div>
                 <div v-for="item in filteredProcessors" :key="item.id" class="processor-item">
                     <div>{{ item.model }}</div>

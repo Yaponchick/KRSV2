@@ -18,6 +18,11 @@ const computersToDelete = ref(null);
 
 const computersToAdd = ref({});
 const computersToEdit = ref({});
+const authors = ref([]);
+const isAuthenticated = ref(false);
+const username = ref('');
+const userId = ref(null);
+const isLoading = ref(false);
 
 const statistics = ref({
     totalComputer: 0,
@@ -77,6 +82,36 @@ async function onComputerAdd() {
     await fetchStatistics();
 }
 
+async function fetchUser() {
+    try {
+        const r = await axios.get("/api/User/info/");
+        isAuthenticated.value = r.data.is_authenticated;
+        username.value = r.data.username;
+        userId.value = r.data.user_id;
+    } catch (error) {
+        console.error("Ошибка при получении данных пользователя:", error);
+        isAuthenticated.value = false;
+        username.value = "";
+        userId.value = null;
+    } finally {
+        isLoading.value = false;
+    }
+}
+
+async function fetchAuthors() {
+    try {
+        const response = await axios.get("/api/User/authors/");
+        console.log("Список авторов:", response.data);
+        authors.value = response.data;
+
+        localStorage.setItem("authors", JSON.stringify(response.data));
+    } catch (error) {
+        console.error("Ошибка при получении списка авторов:", error);
+        authors.value = [];
+        localStorage.removeItem("authors");
+    }
+}
+
 onBeforeMount(async () => {
     await fetchComputers();
     await fetchVideocards();
@@ -84,8 +119,27 @@ onBeforeMount(async () => {
     await fetchProcessor();
     await fetchPowerUnit();
     await fetchStatistics();
-});
+    const storedAuthors = localStorage.getItem("authors");
+    if (storedAuthors) {
+        authors.value = JSON.parse(storedAuthors);
+    }
 
+    const storedIsAuthenticated = localStorage.getItem("isAuthenticated");
+    const storedUsername = localStorage.getItem("username");
+    const storedUserId = localStorage.getItem("userId");
+
+    if (storedIsAuthenticated && storedUsername && storedUserId) {
+        isAuthenticated.value = storedIsAuthenticated === "true";
+        username.value = storedUsername;
+        userId.value = storedUserId;
+    }
+
+    if (isAuthenticated.value && username.value === 'admin') {
+        fetchAuthors();
+    }
+
+    fetchUser();
+});
 
 function onRemoveClick(computer) {
     computersToDelete.value = computer;
@@ -107,6 +161,10 @@ async function onUpdateComputer() {
     await fetchStatistics();
 }
 
+function selectAuthor(authorId) {
+    filters.value.user = authorId;
+}
+
 async function onComputerEditClick(computer) {
     computersToEdit.value = {
         id: computer.id,
@@ -125,11 +183,12 @@ const filters = ref({
     videoCardModel: '',
     motherboardModel: '',
     processorModel: '',
-    powerUnitModel: ''
+    powerUnitModel: '',
+    user: ''
 });
 
 const computersFiltered = computed(() => {
-    return computers.value.filter(item => {
+    return Array.isArray(computers.value) ? computers.value.filter(item => {
         return (
             (!filters.value.model || item.model.includes(filters.value.model)) &&
             (!filters.value.minPrice || parseFloat(item.price) >= parseFloat(filters.value.minPrice)) &&
@@ -137,10 +196,12 @@ const computersFiltered = computed(() => {
             (!filters.value.videoCardModel || item.computerV_FK.model.includes(filters.value.videoCardModel)) &&
             (!filters.value.motherboardModel || item.computerM_FK.model.includes(filters.value.motherboardModel)) &&
             (!filters.value.processorModel || item.computerP_FK.model.includes(filters.value.processorModel)) &&
-            (!filters.value.powerUnitModel || item.computerPU_FK.model.includes(filters.value.powerUnitModel))
+            (!filters.value.powerUnitModel || item.computerPU_FK.model.includes(filters.value.powerUnitModel)) &&
+            (!filters.value.user || item.user === filters.value.user)
         );
-    });
+    }) : [];
 });
+
 
 </script>
 
@@ -373,6 +434,31 @@ const computersFiltered = computed(() => {
                     </div>
                 </div>
             </form>
+            <div class="col-md-2">
+                <ul class="nav">
+                    <li v-if="isAuthenticated && username === 'admin'" class="nav-item dropdown"
+                        style="list-style-type: none;">
+                        <a class="nav-link dropdown-toggle" href="#" id="authorsDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false" style="font-weight: bold; color: #ff9100;">
+                            <i class="bi bi-person-circle"></i> Пользователи
+                        </a>
+                        <ul class="dropdown-menu shadow-lg p-3 rounded" aria-labelledby="authorsDropdown"
+                            style="min-width: 200px; list-style-type: none;">
+                            <li v-if="authors.length === 0" class="dropdown-item text-muted">Нет доступных авторов</li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click.prevent="selectAuthor(null)">
+                                    <i class="bi bi-person-lines-fill"></i> Все пользователи
+                                </a>
+                            </li>
+                            <li v-for="author in authors" :key="author.id">
+                                <a class="dropdown-item" href="#" @click.prevent="selectAuthor(author.id)">
+                                    <i class="bi bi-person"></i> {{ author.username }}
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
             <div>
                 <div v-for="item in computersFiltered " :key="item.id" class="computers-item">
                     <div>{{ item.model }}</div>

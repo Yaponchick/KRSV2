@@ -12,6 +12,10 @@ from rest_framework.response import Response
 from django.db.models import Count, Avg, Max, Min, Sum
 from django.db.models.functions import Cast
 from django.db.models import FloatField
+from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated
+
+from rest_framework import viewsets
 
 class VideoCardViewset(
     mixins.ListModelMixin,
@@ -224,15 +228,48 @@ class ComputersViewset(
         serializer = self.StatsSerializer(instance=stats)
         return Response(serializer.data)
     
-class UserViewSet(GenericViewSet): 
-    @action(url_path="info", methods=["GET"], detail=False) 
-    def get_info(self, request, *args, **kwargs): 
-        data = { 
-            "is_authenticated": request.user.is_authenticated 
-        } 
-        if request.user.is_authenticated: 
-            data.update({ 
-                "username": request.user.username, 
-                "user_id": request.user.id 
-            }) 
+    
+    
+    
+
+class UserViewSet(viewsets.GenericViewSet):
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    @action(url_path="info", methods=["GET"], detail=False)
+    def get_info(self, request, *args, **kwargs):
+        data = {
+            "is_authenticated": request.user.is_authenticated
+        }
+        if request.user.is_authenticated:
+            data.update({
+                "username": request.user.username,
+                "user_id": request.user.id
+            })
         return Response(data)
+
+    @action(url_path="authors", methods=["GET"], detail=False)
+    def get_authors(self, request, *args, **kwargs):
+        """
+        Возвращает список пользователей, у которых связаны данные с моделями компьютеров.
+        Доступно только для пользователей со статусом staff.
+        """
+        if not request.user.is_staff:
+            return Response({"error": "Access denied"}, status=403)
+
+        authors = User.objects.filter(computer__isnull=False).distinct()
+        authors_data = [{"id": user.id, "username": user.username} for user in authors]
+        return Response(authors_data)
+
+    @action(url_path="filter-computers", methods=["GET"], detail=False)
+    def filter_computers_by_author(self, request, *args, **kwargs):
+        """
+        Фильтрует компьютеры по автору.
+        """
+        author_id = request.query_params.get('author_id', None)
+        if not author_id:
+            return Response({"error": "author_id is required"}, status=400)
+
+        computers = Computer.objects.filter(user_id=author_id)
+        serializer = ComputerSerializer(computers, many=True)
+        return Response(serializer.data)
