@@ -13,7 +13,7 @@ class Command(BaseCommand):
         series_power_units = ["Platinum", "Gold", "Bronze", "Silver"]
         model_types_power_units = ["Pro", "X", "G", "M", "Elite"]
 
-        for _ in range(3):
+        for _ in range(197):
             brand = choice(brands_power_units)
             series_name = choice(series_power_units)
             model_type = choice(model_types_power_units)
@@ -39,7 +39,7 @@ class Command(BaseCommand):
         sockets_processors = ["LGA1700", "AM5", "AM4", "LGA1200", "TR4"]
         chipsets_processors = ["Z790", "B760", "X670", "B550", "X570"]
 
-        for _ in range(3):
+        for _ in range(197):
             brand = choice(brands_processors)
             series_name = choice(series_processors[brand])
             model_name = f"{brand} {series_name} {fake.random_int(min=1000, max=9990)}X"
@@ -60,7 +60,7 @@ class Command(BaseCommand):
         series_motherboards = ["Prime", "TUF", "ROG Strix", "Aorus", "Phantom Gaming"]
         supported_memory_types = ["DDR4", "DDR5"]
 
-        for _ in range(3):
+        for _ in range(197):
             brand = choice(brands_motherboards)
             series_name = choice(series_motherboards)
             model_name = f"{brand} {series_name} {fake.random_int(min=100, max=999)}"
@@ -84,7 +84,7 @@ class Command(BaseCommand):
             "Intel": ["Arc A380", "Arc A750", "Arc A770"]
         }
 
-        for _ in range(3):
+        for _ in range(197):
             brand = choice(brands_video_cards)
             model_name = choice(series_video_cards[brand])
             number_fans = fake.random_int(min=1, max=3)
@@ -115,7 +115,7 @@ class Command(BaseCommand):
             return
 
         # Генерация компьютеров
-        for _ in range(3):
+        for _ in range(197):
             video_card = choice(video_cards)
             motherboard = choice(motherboards)
             processor = choice(processors)

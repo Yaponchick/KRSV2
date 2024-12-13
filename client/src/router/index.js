@@ -4,7 +4,7 @@ import VideoCardView from '../views/VideoCardView.vue';
 import MotherboardView from '../views/MotherboardView.vue';
 import ProcessorView from '../views/ProcessorView.vue';
 import PowerUnitView from '../views/PowerUnitView.vue';
-
+import ComputerDetails from '../views/ComputerDetails.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,7 +33,12 @@ const router = createRouter({
       path: "/PowerUnitView",
       model: "PowerUnitView",
       component: PowerUnitView
-    }
+    },
+    {
+      path: '/computer-details',
+      model: 'ComputerDetails',
+      component: ComputerDetails
+  }
   ]
 })
 

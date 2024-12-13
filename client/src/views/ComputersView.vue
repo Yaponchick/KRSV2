@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, onBeforeMount } from 'vue';
 import axios from 'axios';
-
+import QRCode from 'qrcode';
 import Cookies from 'js-cookie';
 import Papa from 'papaparse';
 onBeforeMount(() => {
@@ -18,6 +18,7 @@ const computersToDelete = ref(null);
 
 const computersToAdd = ref({});
 const computersToEdit = ref({});
+const qrCodeDataUrl = ref('');
 const authors = ref([]);
 const isAuthenticated = ref(false);
 const username = ref('');
@@ -227,10 +228,81 @@ async function saveToFile() {
     }
 }
 
+function onQRClick(computer) {
+    computersToEdit.value = computer;
+    generateQRCode();
+}
+
+function generateQRCode() {
+    const data = computersToEdit.value;
+    if (data && data.model) {
+        const baseUrl = `${window.location.origin}/computer-details`;
+        const queryParams = new URLSearchParams({
+            model: data.model,
+            price: data.price,
+            videoCard: data.computerV_FK?.model || 'Не указана',
+            motherboard: data.computerM_FK?.model || 'Не указана',
+            processor: data.computerP_FK?.model || 'Не указан',
+            powerUnit: data.computerPU_FK?.model || 'Не указан',
+        });
+
+        const qrUrl = `${baseUrl}?${queryParams.toString()}`;
+
+        QRCode.toDataURL(qrUrl, { width: 200 }, (err, url) => {
+            if (err) {
+                console.error('Ошибка при генерации QR-кода:', err);
+            } else {
+                qrCodeDataUrl.value = url;
+            }
+        });
+    }
+}
+const redirectUrl = computed(() => {
+    const data = computersToEdit.value;
+    if (data && data.model) {
+        const baseUrl = `${window.location.origin}/computer-details`;
+        return `${baseUrl}?${new URLSearchParams({
+            model: data.model,
+            price: data.price,
+            videoCard: data.computerV_FK?.model || 'Не указана',
+            motherboard: data.computerM_FK?.model || 'Не указана',
+            processor: data.computerP_FK?.model || 'Не указан',
+            powerUnit: data.computerPU_FK?.model || 'Не указан',
+        }).toString()}`;
+    }
+    return '#';
+});
 </script>
 
 <template>
     <div class="container-fluid">
+        <!--Modal QR-->
+        <div class="modal fade" id="QR" tabindex="-1" aria-labelledby="QR" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="QRLabel">Данные ПК</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Модель:</strong> {{ computersToEdit.model }}</p>
+                        <p><strong>Цена:</strong> {{ computersToEdit.price }}</p>
+                        <p><strong>Видеокарта:</strong> {{ computersToEdit.computerV_FK?.model || 'Не указана' }}</p>
+                        <p><strong>Материнская плата:</strong> {{ computersToEdit.computerM_FK?.model || 'Не указана' }}
+                        </p>
+                        <p><strong>Процессор:</strong> {{ computersToEdit.computerP_FK?.model || 'Не указан' }}</p>
+                        <p><strong>Блок питания:</strong> {{ computersToEdit.computerPU_FK?.model || 'Не указан' }}</p>
+
+                        <div v-if="qrCodeDataUrl" class="text-center">
+                            <img :src="qrCodeDataUrl" alt="QR-код" class="mb-3" />
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-center">
+                        <a :href="redirectUrl" class="btn btn-primary w-100">ТЫК</a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!--Modal delete-->
         <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel"
@@ -489,17 +561,23 @@ async function saveToFile() {
             </div>
             <div>
                 <div v-for="item in computersFiltered " :key="item.id" class="computers-item">
+
                     <div>{{ item.model }}</div>
                     <div>{{ item.price }}</div>
                     <div>{{ item.computerV_FK.model }}</div>
                     <div>{{ item.computerM_FK.model }}</div>
                     <div>{{ item.computerP_FK.model }}</div>
                     <div>{{ item.computerPU_FK.model }}</div>
+
                     <button class="btn btn-success" @click="onComputerEditClick(item)" data-bs-toggle="modal"
                         data-bs-target="#editComputerModal"> <i class="bi bi-pencil"> </i></button>
                     <button class="btn btn-danger" @click="onRemoveClick(item)" data-bs-toggle="modal"
                         data-bs-target="#deleteConfirmationModal">
                         <i class="bi bi-trash"></i>
+                    </button>
+                    <button class="btn btn-primary" @click="onQRClick(item)" data-bs-toggle="modal"
+                        data-bs-target="#QR">
+                        <i class="bi bi-qr-code"></i>
                     </button>
                 </div>
             </div>
@@ -515,7 +593,7 @@ async function saveToFile() {
     box-shadow: 0 0 4px silver;
     border-radius: 8px;
     display: grid;
-    grid-template-columns: 0.25fr 0.5fr 0.5fr 1fr 1fr 1fr 0.14fr auto;
+    grid-template-columns: 0.25fr 0.5fr 0.5fr 1fr 1fr 1fr 0.14fr 0.14fr auto;
     gap: 8px;
     text-align: center;
     align-items: center;

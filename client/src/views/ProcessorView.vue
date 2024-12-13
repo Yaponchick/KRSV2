@@ -150,6 +150,8 @@ const filters = ref({
 
 // Функция для фильтрации процессоров
 const filteredProcessors = computed(() => {
+    if (!Array.isArray(processor.value)) return [];
+    
     return processor.value.filter(item => {
         const matchModel = filters.value.model ? item.model.includes(filters.value.model) : true;
         const matchSocket = filters.value.socket ? item.socket.includes(filters.value.socket) : true;
@@ -166,6 +168,7 @@ const filteredProcessors = computed(() => {
         return matchModel && matchSocket && matchChipset && matchFrequency && matchPriceMin && matchPriceMax && matchUser;
     });
 });
+
 
 </script>
 
@@ -393,13 +396,10 @@ const filteredProcessors = computed(() => {
             <div>
                 <div v-for="item in filteredProcessors" :key="item.id" class="processor-item">
                     <div>{{ item.model }}</div>
+                    <div>{{ item.price }}</div>
                     <div>{{ item.socket }}</div>
                     <div>{{ item.chipset }}</div>
                     <div>{{ item.frequency }}</div>
-                    <div>{{ item.price }}</div>
-
-
-
                     <button class="btn btn-success" @click="onProcessorEditClick(item)" data-bs-toggle="modal"
                         data-bs-target="#editProcessorModal"> <i class="bi bi-pencil"> </i></button>
                     <button class="btn btn-danger" @click="onRemoveClick(item)" data-bs-toggle="modal"

@@ -4,6 +4,10 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
+import qrcode
+from io import BytesIO
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 
 import json
 from computers.models import Computer, VideoCard, Motherboard, Processor, PowerUnit

@@ -148,6 +148,7 @@ const filters = ref({
 });
 
 const powerUnitFiltered = computed(() => {
+    if (!Array.isArray(powerUnit.value)) return [];
     return powerUnit.value.filter(item => {
         return (
             (!filters.value.model || item.model.includes(filters.value.model)) &&
