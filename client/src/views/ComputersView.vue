@@ -3,7 +3,7 @@ import { computed, ref, onBeforeMount } from 'vue';
 import axios from 'axios';
 
 import Cookies from 'js-cookie';
-
+import Papa from 'papaparse';
 onBeforeMount(() => {
     axios.defaults.headers.common['X-CSRFToken'] = Cookies.get("csrftoken");
 })
@@ -202,6 +202,30 @@ const computersFiltered = computed(() => {
     }) : [];
 });
 
+async function saveToFile() {
+    const computersData = computersFiltered.value.map(item => ({
+        model: item.model,
+        price: item.price,
+        videoCard: item.computerV_FK.model,
+        motherboard: item.computerM_FK.model,
+        processor: item.computerP_FK.model,
+        powerUnit: item.computerPU_FK.model
+    }));
+
+    const csv = Papa.unparse(computersData);
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'computers_data.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
 
 </script>
 
@@ -402,6 +426,10 @@ const computersFiltered = computed(() => {
                             data-bs-target="#statisticsModal">
                             Статистика
                         </button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-info mt-3 mb-2" @click="saveToFile">Сохранить в
+                            exel</button>
                     </div>
                 </div>
             </form>

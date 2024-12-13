@@ -15,7 +15,12 @@ from django.db.models import FloatField
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 
+from docx import Document
+from io import BytesIO
+from django.http import HttpResponse
+
 from rest_framework import viewsets
+import openpyxl
 
 class VideoCardViewset(
     mixins.ListModelMixin,
@@ -228,9 +233,24 @@ class ComputersViewset(
         serializer = self.StatsSerializer(instance=stats)
         return Response(serializer.data)
     
-    
-    
-    
+
+    @action(detail=False, methods=['get'], url_path='export-to-excel')
+    def export_to_excel(self, request):
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Computers"
+
+        headers = ['ID', 'Name', 'Price', 'Description']
+        ws.append(headers)
+
+        computers = Computer.objects.all() 
+        for computer in computers:
+            ws.append([computer.id, computer.name, computer.price, computer.description])
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="computers.xlsx"'
+        wb.save(response)
+        return response
 
 class UserViewSet(viewsets.GenericViewSet):
     queryset = User.objects.all()
